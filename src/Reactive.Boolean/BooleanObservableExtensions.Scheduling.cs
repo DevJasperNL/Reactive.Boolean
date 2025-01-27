@@ -82,6 +82,9 @@ namespace Reactive.Boolean
         /// </summary>
         public static IObservable<bool> LimitTrueDuration(this IObservable<bool> observable, IScheduler scheduler, TimeSpan timeSpan)
         {
+            ArgumentNullException.ThrowIfNull(observable);
+            ArgumentNullException.ThrowIfNull(scheduler);
+
             var falseWhenTrueFor = observable
                 .WhenTrueFor(scheduler, timeSpan)
                 .Where(b => b)
