@@ -4,6 +4,14 @@
     <TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Title>Reactive.Boolean</Title>
+    <Version>0.1.0</Version>
+    <Authors>Jasper Lammers</Authors>
+    <Company />
+    <Description>Reactive Extensions meant specifically for implementations of IObservable&lt;bool&gt;</Description>
+    <RepositoryUrl>https://github.com/DevJasperNL/Reactive.Boolean</RepositoryUrl>
+    <PackageTags>Reactive Programming;Rx;Rx.NET;Reactive Extensions;Observables;Binary State;State Management;Boolean Observable;Reactive Streams;C#;.NET;Reactive Patterns;Reactive Utils;Stateful Observables;Extension Methods;Boolean Logic;Binary;Reactive;ReactiveX</PackageTags>
+	<PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
