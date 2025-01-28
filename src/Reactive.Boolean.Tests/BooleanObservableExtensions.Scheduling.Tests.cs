@@ -14,7 +14,7 @@ namespace Reactive.Boolean.Tests
             // Arrange
             var subject = new Subject<bool>();
             var scheduler = new TestScheduler();
-            var memoryObservable = subject.PersistTrueFor(scheduler, TimeSpan.FromMinutes(1));
+            var memoryObservable = subject.PersistTrueFor(TimeSpan.FromMinutes(1), scheduler);
             
             bool? result = null;
             memoryObservable.Subscribe(b => result = b);
@@ -34,7 +34,7 @@ namespace Reactive.Boolean.Tests
             // Arrange
             var subject = new Subject<bool>();
             var scheduler = new TestScheduler();
-            var memoryObservable = subject.PersistTrueFor(scheduler, TimeSpan.FromMinutes(1));
+            var memoryObservable = subject.PersistTrueFor(TimeSpan.FromMinutes(1), scheduler);
 
             var results = new List<bool>();
             memoryObservable.Subscribe(results.Add);
@@ -53,7 +53,7 @@ namespace Reactive.Boolean.Tests
             // Arrange
             var subject = new Subject<bool>();
             var scheduler = new TestScheduler();
-            var memoryObservable = subject.PersistTrueFor(scheduler, TimeSpan.FromMinutes(1));
+            var memoryObservable = subject.PersistTrueFor(TimeSpan.FromMinutes(1), scheduler);
 
             bool? result = null;
             memoryObservable.Subscribe(b => result = b);
@@ -71,7 +71,7 @@ namespace Reactive.Boolean.Tests
         {
             var subject = new Subject<bool>();
             var scheduler = new TestScheduler();
-            var memoryObservable = subject.PersistTrueFor(scheduler, TimeSpan.FromTicks(2));
+            var memoryObservable = subject.PersistTrueFor(TimeSpan.FromTicks(2), scheduler);
 
             bool? result = null;
             memoryObservable.Subscribe(b => result = b);
@@ -94,7 +94,7 @@ namespace Reactive.Boolean.Tests
             // Arrange
             var subject = new Subject<bool>();
             var scheduler = new TestScheduler();
-            var memoryObservable = subject.WhenTrueFor(scheduler, TimeSpan.FromMinutes(1));
+            var memoryObservable = subject.WhenTrueFor(TimeSpan.FromMinutes(1), scheduler);
 
             bool? result = null;
             memoryObservable.Subscribe(b => result = b);
@@ -114,7 +114,7 @@ namespace Reactive.Boolean.Tests
             // Arrange
             var subject = new Subject<bool>();
             var scheduler = new TestScheduler();
-            var memoryObservable = subject.WhenTrueFor(scheduler, TimeSpan.FromMinutes(1));
+            var memoryObservable = subject.WhenTrueFor(TimeSpan.FromMinutes(1), scheduler);
 
             var results = new List<bool>();
             memoryObservable.Subscribe(results.Add);
@@ -132,7 +132,7 @@ namespace Reactive.Boolean.Tests
         {
             var subject = new Subject<bool>();
             var scheduler = new TestScheduler();
-            var memoryObservable = subject.WhenTrueFor(scheduler, TimeSpan.FromTicks(2));
+            var memoryObservable = subject.WhenTrueFor(TimeSpan.FromTicks(2), scheduler);
 
             bool? result = null;
             memoryObservable.Subscribe(b => result = b);
@@ -152,7 +152,7 @@ namespace Reactive.Boolean.Tests
         {
             var subject = new Subject<bool>();
             var scheduler = new TestScheduler();
-            var memoryObservable = subject.WhenTrueFor(scheduler, TimeSpan.FromTicks(1));
+            var memoryObservable = subject.WhenTrueFor(TimeSpan.FromTicks(1), scheduler);
 
             bool? result = null;
             memoryObservable.Subscribe(b => result = b);
@@ -170,7 +170,7 @@ namespace Reactive.Boolean.Tests
         {
             var subject = new Subject<bool>();
             var scheduler = new TestScheduler();
-            var memoryObservable = subject.WhenTrueFor(scheduler, TimeSpan.FromTicks(2));
+            var memoryObservable = subject.WhenTrueFor(TimeSpan.FromTicks(2), scheduler);
 
             bool? result = null;
             memoryObservable.Subscribe(b => result = b);
@@ -193,7 +193,7 @@ namespace Reactive.Boolean.Tests
         {
             var subject = new Subject<bool>();
             var scheduler = new TestScheduler();
-            var memoryObservable = subject.WhenTrueFor(scheduler, TimeSpan.FromTicks(2));
+            var memoryObservable = subject.WhenTrueFor(TimeSpan.FromTicks(2), scheduler);
 
             bool? result = null;
             memoryObservable.Subscribe(b => result = b);
@@ -215,7 +215,7 @@ namespace Reactive.Boolean.Tests
             // Arrange
             var subject = new Subject<bool>();
             var scheduler = new TestScheduler();
-            var memoryObservable = subject.LimitTrueDuration(scheduler, TimeSpan.FromMinutes(1));
+            var memoryObservable = subject.LimitTrueDuration(TimeSpan.FromMinutes(1), scheduler);
 
             bool? result = null;
             memoryObservable.Subscribe(b => result = b);
@@ -235,7 +235,7 @@ namespace Reactive.Boolean.Tests
             // Arrange
             var subject = new Subject<bool>();
             var scheduler = new TestScheduler();
-            var memoryObservable = subject.LimitTrueDuration(scheduler, TimeSpan.FromMinutes(1));
+            var memoryObservable = subject.LimitTrueDuration(TimeSpan.FromMinutes(1), scheduler);
 
             bool? result = null;
             memoryObservable.Subscribe(b => result = b);
@@ -253,7 +253,7 @@ namespace Reactive.Boolean.Tests
         {
             var subject = new Subject<bool>();
             var scheduler = new TestScheduler();
-            var memoryObservable = subject.LimitTrueDuration(scheduler, TimeSpan.FromTicks(2));
+            var memoryObservable = subject.LimitTrueDuration(TimeSpan.FromTicks(2), scheduler);
 
             bool? result = null;
             memoryObservable.Subscribe(b => result = b);
@@ -273,7 +273,7 @@ namespace Reactive.Boolean.Tests
         {
             var subject = new Subject<bool>();
             var scheduler = new TestScheduler();
-            var memoryObservable = subject.LimitTrueDuration(scheduler, TimeSpan.FromTicks(2));
+            var memoryObservable = subject.LimitTrueDuration(TimeSpan.FromTicks(2), scheduler);
 
             bool? result = null;
             memoryObservable.Subscribe(b => result = b);

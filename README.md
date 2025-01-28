@@ -15,11 +15,17 @@ This library has extension methods for logical operators:
 ### And
 
 ![And](docs/img/And.png)
+
+### And (not distinct)
+
 ![And (not distinct)](docs/img/And%20(not%20distinct).png)
 
 ### Or
 
 ![Or](docs/img/Or.png)
+
+### Or (not distinct)
+
 ![Or (not distinct)](docs/img/Or%20(not%20distinct).png)
 
 ### XOr
@@ -32,19 +38,19 @@ This library also has extension methods for scheduling:
 
 ### PersistTrueFor
 
-Returns an observable that stays true for a time span once the base observable turns back to false.
+Returns an observable that stays true for a time span once the source observable turns back to false.
 
 ![PersistTrueFor](docs/img/PersistTrueFor.png)
 
 ### WhenTrueFor
 
-Returns an observable that emits true once the base observable emits true for a minimum time span.
+Returns an observable that emits true once the source observable emits true for a minimum time span.
 
 ![WhenTrueFor](docs/img/WhenTrueFor.png)
 
 ### LimitTrueDuration
 
-Returns an observable that stays true for a maximum of time span. If the base observable emits false before the time has passed, the resulting observable also emits false.
+Returns an observable that stays true for a maximum of time span. If the source observable emits false before the time has passed, the resulting observable also emits false.
 
 ![LimitTrueDuration](docs/img/LimitTrueDuration.png)
 

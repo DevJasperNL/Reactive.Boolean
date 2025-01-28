@@ -6,13 +6,13 @@ namespace Reactive.Boolean
     public static partial class BooleanObservableExtensions
     {
         /// <summary>
-        /// Returns an observable that stays true for a <paramref name="timeSpan"/> once the base <paramref name="observable"/> turns back to false.
+        /// Returns an observable that stays true for a <paramref name="timeSpan"/> once the source <paramref name="observable"/> turns back to false.
         /// Resulting observable is distinct.
         /// </summary>
         public static IObservable<bool> PersistTrueFor(
             this IObservable<bool> observable,
-            IScheduler scheduler,
-            TimeSpan timeSpan)
+            TimeSpan timeSpan,
+            IScheduler scheduler)
         {
             ArgumentNullException.ThrowIfNull(observable);
             ArgumentNullException.ThrowIfNull(scheduler);
@@ -39,16 +39,16 @@ namespace Reactive.Boolean
         }
 
         /// <summary>
-        /// Returns an observable that emits true once the base <paramref name="observable"/> emits true for a minimum <paramref name="timeSpan"/>.
+        /// Returns an observable that emits true once the source <paramref name="observable"/> emits true for a minimum <paramref name="timeSpan"/>.
         /// Resulting observable is distinct.
         /// </summary>
         /// <param name="observable"></param>
+        /// <param name="timeSpan">The minimum time the source observable needs to be true before true is emitted in the resulting observable.</param>
         /// <param name="scheduler"></param>
-        /// <param name="timeSpan">The minimum time the base observable needs to be true before true is emitted in the resulting observable.</param>
         public static IObservable<bool> WhenTrueFor(
             this IObservable<bool> observable,
-            IScheduler scheduler,
-            TimeSpan timeSpan)
+            TimeSpan timeSpan,
+            IScheduler scheduler)
         {
             ArgumentNullException.ThrowIfNull(observable);
             ArgumentNullException.ThrowIfNull(scheduler);
@@ -77,16 +77,16 @@ namespace Reactive.Boolean
         }
 
         /// <summary>
-        /// Returns an observable that stays true for a maximum of <paramref name="timeSpan"/>. If the base <paramref name="observable"/> emits false before the time has passed, the resulting observable also emits false.
+        /// Returns an observable that stays true for a maximum of <paramref name="timeSpan"/>. If the source <paramref name="observable"/> emits false before the time has passed, the resulting observable also emits false.
         /// Resulting observable is distinct.
         /// </summary>
-        public static IObservable<bool> LimitTrueDuration(this IObservable<bool> observable, IScheduler scheduler, TimeSpan timeSpan)
+        public static IObservable<bool> LimitTrueDuration(this IObservable<bool> observable, TimeSpan timeSpan, IScheduler scheduler)
         {
             ArgumentNullException.ThrowIfNull(observable);
             ArgumentNullException.ThrowIfNull(scheduler);
 
             var falseWhenTrueFor = observable
-                .WhenTrueFor(scheduler, timeSpan)
+                .WhenTrueFor(timeSpan, scheduler)
                 .Where(b => b)
                 .Select(_ => false);
 
