@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Title>Reactive.Boolean</Title>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <Authors>Jasper Lammers</Authors>
     <Company />
     <Description>Reactive Extensions meant specifically for implementations of IObservable&lt;bool&gt;</Description>

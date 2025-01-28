@@ -15,11 +15,17 @@ This library has extension methods for logical operators:
 ### And
 
 ![And](docs/img/And.png)
+
+### And (not distinct)
+
 ![And (not distinct)](docs/img/And%20(not%20distinct).png)
 
 ### Or
 
 ![Or](docs/img/Or.png)
+
+### Or (not distinct)
+
 ![Or (not distinct)](docs/img/Or%20(not%20distinct).png)
 
 ### XOr
