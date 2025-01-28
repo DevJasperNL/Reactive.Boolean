@@ -11,8 +11,8 @@ namespace Reactive.Boolean
         /// </summary>
         public static IObservable<bool> PersistTrueFor(
             this IObservable<bool> observable,
-            IScheduler scheduler,
-            TimeSpan timeSpan)
+            TimeSpan timeSpan,
+            IScheduler scheduler)
         {
             ArgumentNullException.ThrowIfNull(observable);
             ArgumentNullException.ThrowIfNull(scheduler);
@@ -43,12 +43,12 @@ namespace Reactive.Boolean
         /// Resulting observable is distinct.
         /// </summary>
         /// <param name="observable"></param>
-        /// <param name="scheduler"></param>
         /// <param name="timeSpan">The minimum time the base observable needs to be true before true is emitted in the resulting observable.</param>
+        /// <param name="scheduler"></param>
         public static IObservable<bool> WhenTrueFor(
             this IObservable<bool> observable,
-            IScheduler scheduler,
-            TimeSpan timeSpan)
+            TimeSpan timeSpan,
+            IScheduler scheduler)
         {
             ArgumentNullException.ThrowIfNull(observable);
             ArgumentNullException.ThrowIfNull(scheduler);
@@ -80,13 +80,13 @@ namespace Reactive.Boolean
         /// Returns an observable that stays true for a maximum of <paramref name="timeSpan"/>. If the base <paramref name="observable"/> emits false before the time has passed, the resulting observable also emits false.
         /// Resulting observable is distinct.
         /// </summary>
-        public static IObservable<bool> LimitTrueDuration(this IObservable<bool> observable, IScheduler scheduler, TimeSpan timeSpan)
+        public static IObservable<bool> LimitTrueDuration(this IObservable<bool> observable, TimeSpan timeSpan, IScheduler scheduler)
         {
             ArgumentNullException.ThrowIfNull(observable);
             ArgumentNullException.ThrowIfNull(scheduler);
 
             var falseWhenTrueFor = observable
-                .WhenTrueFor(scheduler, timeSpan)
+                .WhenTrueFor(timeSpan, scheduler)
                 .Where(b => b)
                 .Select(_ => false);
 
