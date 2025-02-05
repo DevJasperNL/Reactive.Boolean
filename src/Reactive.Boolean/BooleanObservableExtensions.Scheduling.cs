@@ -57,6 +57,27 @@ namespace Reactive.Boolean
         }
 
         /// <summary>
+        /// Returns an observable that won't emit true for at least <paramref name="timeSpan"/> after an initial "false" is emitted by <paramref name="source"/>.
+        /// If a "true" is emitted during the <paramref name="timeSpan"/>, it will be emitted immediately after the timer is completed.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="timeSpan"></param>
+        /// <param name="scheduler"></param>
+        /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Both consecutive "true" and "false" values will be emitted. Note that consecutive "true" values that occur during the timer, will only be emitted as a single "true" once the timer runs out.</param>
+        /// <param name="resetTimerOnConsecutiveFalse">If "true", every "false" that is emitted by <paramref name="source"/> will reset the timer.</param>
+        /// <returns></returns>
+        public static IObservable<bool> FalseForAtLeast(
+            this IObservable<bool> source,
+            TimeSpan timeSpan,
+            IScheduler scheduler,
+            bool distinctUntilChanged = true,
+            bool resetTimerOnConsecutiveFalse = false) => 
+            source
+                .Not()
+                .TrueForAtLeast(timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveFalse)
+                .Not();
+
+        /// <summary>
         /// Returns an observable that delays the first "false" that is emitted after a "true" by <paramref name="source"/> for a duration of <paramref name="timeSpan"/>.
         /// Resulting observable is distinct.
         /// </summary>
@@ -114,7 +135,26 @@ namespace Reactive.Boolean
         }
 
         /// <summary>
-        /// Returns an observable that emits "true" once <paramref name="source"/> doesn't emit "false for a minimum or <paramref name="timeSpan"/>.
+        /// Returns an observable that delays the first "true" that is emitted after a "false" by <paramref name="source"/> for a duration of <paramref name="timeSpan"/>.
+        /// Resulting observable is distinct.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="timeSpan"></param>
+        /// <param name="scheduler"></param>
+        /// <param name="resetTimerOnConsecutiveTrue">If "true", every "true" that is emitted by <paramref name="source"/> will reset the timer.</param>
+        /// <returns></returns>
+        public static IObservable<bool> PersistFalseFor(
+            this IObservable<bool> source,
+            TimeSpan timeSpan,
+            IScheduler scheduler,
+            bool resetTimerOnConsecutiveTrue = false) =>
+            source
+                .Not()
+                .PersistTrueFor(timeSpan, scheduler, resetTimerOnConsecutiveTrue)
+                .Not();
+
+        /// <summary>
+        /// Returns an observable that emits "true" once <paramref name="source"/> does not emit "false" for a minimum of <paramref name="timeSpan"/>.
         /// Resulting observable is distinct.
         /// </summary>
         /// <param name="source"></param>
@@ -169,6 +209,24 @@ namespace Reactive.Boolean
                 .Merge(delayedTrueObservable)
                 .DistinctUntilChanged();
         }
+
+        /// <summary>
+        /// Returns an observable that emits "false" once <paramref name="source"/> does not emit "true" for a minimum of <paramref name="timeSpan"/>.
+        /// Resulting observable is distinct.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="timeSpan"></param>
+        /// <param name="scheduler"></param>
+        /// <param name="resetTimerOnConsecutiveFalse">If "true", every "false" that is emitted by <paramref name="source"/> will reset the timer.</param>
+        public static IObservable<bool> WhenFalseFor(
+            this IObservable<bool> source,
+            TimeSpan timeSpan,
+            IScheduler scheduler,
+            bool resetTimerOnConsecutiveFalse = false) =>
+            source
+                .Not()
+                .WhenTrueFor(timeSpan, scheduler, resetTimerOnConsecutiveFalse)
+                .Not();
 
         /// <summary>
         /// Returns an observable that will automatically emit "false" if <paramref name="source"/> does not emit a "false" itself within <paramref name="timeSpan"/> after emitting "true".
@@ -239,6 +297,26 @@ namespace Reactive.Boolean
                 .Where(b => b != null)
                 .Select(b => b!.Value);
         }
+
+        /// <summary>
+        /// Returns an observable that will automatically emit "true" if <paramref name="source"/> does not emit a "true" itself within <paramref name="timeSpan"/> after emitting "false".
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="timeSpan"></param>
+        /// <param name="scheduler"></param>
+        /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Both consecutive "true" and "false" values will be emitted.</param>
+        /// <param name="resetTimerOnConsecutiveTrue">If "true", every "false" that is emitted by <paramref name="source"/> will reset the timer.</param>
+        /// <returns></returns>
+        public static IObservable<bool> LimitFalseDuration(
+            this IObservable<bool> source, 
+            TimeSpan timeSpan,
+            IScheduler scheduler,
+            bool distinctUntilChanged = true,
+            bool resetTimerOnConsecutiveTrue = false) =>
+            source
+                .Not()
+                .LimitTrueDuration(timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue)
+                .Not();
 
         /// <summary>
         /// Returns an observable that immediately returns false, emits true when <paramref name="triggerObservable"/> emits true and will emit false again after a duration of <paramref name="timeSpan"/>.
