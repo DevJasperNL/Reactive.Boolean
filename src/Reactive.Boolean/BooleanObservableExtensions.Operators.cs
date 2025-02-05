@@ -8,11 +8,11 @@ namespace Reactive.Boolean
         /// Returns an observable in which the input is inverted.
         /// (returns observable.Select(b => !b))
         /// </summary>
-        public static IObservable<bool> Not(this IObservable<bool> observable)
+        public static IObservable<bool> Not(this IObservable<bool> source)
         {
-            ArgumentNullException.ThrowIfNull(observable);
+            ArgumentNullException.ThrowIfNull(source);
 
-            return observable.Select(b => !b);
+            return source.Select(b => !b);
         }
 
         /// <summary>
