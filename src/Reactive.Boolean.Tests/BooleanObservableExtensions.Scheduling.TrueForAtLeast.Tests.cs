@@ -1,5 +1,4 @@
 using Microsoft.Reactive.Testing;
-using System;
 using System.Reactive.Subjects;
 
 namespace Reactive.Boolean.Tests
