@@ -88,6 +88,10 @@ DistinctUntilChanged is not applied to the result.
 
 ![XOr (not distinct)](docs/img/XOr%20(not%20distinct).png)
 
+### Inverted operators
+
+This library also implements inverted operators `Nand`, `Nor` and `Xnor`.
+
 ## Scheduling
 
 This library also has extension methods for scheduling:
