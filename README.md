@@ -8,31 +8,89 @@ Article containing examples in relation to home automation: [Article with exampl
 
 ## Logical Operators
 
-This library has extension methods for logical operators:
+This library has extension methods for logical operators.
+
+### Stateful observables
+All operators except for `Not` are implemented using `CombineLatest`. This means that the first output is only emitted if all inputs have emitted an value after subscribing. For this reason, it makes sense to apply logical operators to stateful observables. In this context these are observables that emit their current state the moment an observer subscribes to them. This can easily be achieved by using `Prepend`, preferably in combination with `Observable.Defer`. For example:
+```csharp
+Observable.Defer(() => source.Prepend(initialState));
+```
+
+### Distinctness
+Depending on the operator, there are several ways of handling value distinctness. Different forms are explained below.
 
 ### Not
+
+Returns an observable in which the input is inverted.
 
 ![Not](docs/img/Not.png)
 
 ### And
 
+Returns an observable that combines the latest of the provided observables using an AND operator.
+The `And` method accepts three values to determine distinctness of the output:
+
+**OutputDistinctUntilChanged (default)**
+
+DistinctUntilChanged is applied to the returned observable, meaning a "true" can only be followed by a "false" and vice versa.
+
 ![And](docs/img/And.png)
 
-### And (not distinct)
+**InputDistinctUntilChanged**
+
+DistinctUntilChanged is applied to the inputs only. Meaning that consecutive values on the input do not change the output, but input changes on different inputs can. For example, going from "false", "false" to "true", "false" will emit consecutive "false" values.
+
+![And (input distinct)](docs/img/And%20(input%20distinct).png)
+
+**NotDistinct**
+
+DistinctUntilChanged is never applied. Meaning both consecutive input and output values will be emitted.
 
 ![And (not distinct)](docs/img/And%20(not%20distinct).png)
 
 ### Or
 
+Returns an observable that combines the latest of the provided observables using an OR operator.
+The `Or` method accepts three values to determine distinctness of the output:
+
+**OutputDistinctUntilChanged (default)**
+
+DistinctUntilChanged is applied to the returned observable, meaning a "true" can only be followed by a "false" and vice versa.
+
 ![Or](docs/img/Or.png)
 
-### Or (not distinct)
+**InputDistinctUntilChanged**
+
+DistinctUntilChanged is applied to the inputs only. Meaning that consecutive values on the input do not change the output, but input changes on different inputs can. For example, going from "true", "false" to "true", "true" will emit consecutive "true" values.
+
+![Or (input distinct)](docs/img/Or%20(input%20distinct).png)
+
+**NotDistinct**
+
+DistinctUntilChanged is never applied. Meaning both consecutive input and output values will be emitted.
 
 ![Or (not distinct)](docs/img/Or%20(not%20distinct).png)
 
 ### XOr
 
+Returns an observable that combines the latest results of two observables using an XOR operator.
+As changing distinct inputs will always result in a distinct XOR output, the `Xor` method accepts only two values to determine distinctness of the output:
+
+**distinctUntilChanged = true (default)**
+
+DistinctUntilChanged is applied to the result.
+
 ![XOr](docs/img/XOr.png)
+
+**distinctUntilChanged = false**
+
+DistinctUntilChanged is not applied to the result.
+
+![XOr (not distinct)](docs/img/XOr%20(not%20distinct).png)
+
+### Inverted operators
+
+This library also implements inverted operators `Nand`, `Nor` and `Xnor`.
 
 ## Scheduling
 
