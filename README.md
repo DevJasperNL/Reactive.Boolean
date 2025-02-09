@@ -11,9 +11,9 @@ Article containing examples in relation to home automation: [Article with exampl
 This library has extension methods for logical operators.
 
 ### Stateful observables
-All operators except for `Not` are implemented using `CombineLatest`. This means that the first output is only emitted if all inputs have emitted an value after subscribing. For this reason, it makes sense to apply logical operators to stateful observables. In this context these are observables that emit their current state the moment an observer subscribes to them. This can easily be achieved by using `Prepend`, preferably in combination with `Observable.Defer`. For example:
+All operators except for `Not` are implemented using `CombineLatest`. This means that the first output is only emitted if all inputs have emitted an value after subscribing. For this reason, it makes sense to apply these logical operators to stateful observables. In this context these are observables that emit their current state the moment an observer subscribes to them. This can easily be achieved by using `Prepend`, preferably in combination with `Observable.Defer`. For example:
 ```csharp
-Observable.Defer(() => source.Prepend(initialState));
+Observable.Defer(() => stateChanges.Prepend(initialState));
 ```
 
 ### Distinctness
