@@ -98,7 +98,8 @@ This library also has extension methods for scheduling:
 
 ### TrueForAtLeast
 
-Returns an observable that won't emit false for at least timespan after an initial "true" is emitted by source.
+Returns an observable that won't emit `false` for at least the provided timespan after an initial `true` is emitted by the source observable.
+If a `false` is emitted during the provided timespan, it will be emitted immediately after the timer is completed.
 
 ![TrueForAtLeast](docs/img/TrueForAtLeast.png)
 
@@ -117,7 +118,7 @@ buttonPressed
 
 ### PersistTrueFor
 
-Returns an observable that stays true for a time span once the source observable turns back to false.
+Returns an observable that delays the first `false` that is emitted after a `true` by the source for a duration of a provided timespan.
 
 ![PersistTrueFor](docs/img/PersistTrueFor.png)
 
@@ -136,7 +137,7 @@ motionDetected
 
 ### WhenTrueFor
 
-Returns an observable that emits true once the source observable emits true for a minimum time span.
+Returns an observable that emits `true` once the source does not emit `false` for a minimum of the provided timespan.
 
 ![WhenTrueFor](docs/img/WhenTrueFor.png)
 
@@ -153,7 +154,7 @@ washingMachineCurrentIsZero
 
 ### LimitTrueDuration
 
-Returns an observable that stays true for a maximum of time span. If the source observable emits false before the time has passed, the resulting observable also emits false.
+Returns an observable that will automatically emit `false` if the source does not emit a `false` itself within the provided timespan after emitting `true`.
 
 ![LimitTrueDuration](docs/img/LimitTrueDuration.png)
 
