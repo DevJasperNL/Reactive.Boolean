@@ -6,7 +6,7 @@ namespace Reactive.Boolean
     public static partial class BooleanObservableExtensions
     {
         /// <summary>
-        /// Returns an observable that won't emit false for at least <paramref name="timeSpan"/> after an initial "true" is emitted by <paramref name="source"/>.
+        /// Returns an observable that won't emit "false" for at least <paramref name="timeSpan"/> after an initial "true" is emitted by <paramref name="source"/>.
         /// If a "false" is emitted during the <paramref name="timeSpan"/>, it will be emitted immediately after the timer is completed.
         /// </summary>
         /// <param name="source"></param>
@@ -57,7 +57,7 @@ namespace Reactive.Boolean
         }
 
         /// <summary>
-        /// Returns an observable that won't emit true for at least <paramref name="timeSpan"/> after an initial "false" is emitted by <paramref name="source"/>.
+        /// Returns an observable that won't emit "true" for at least <paramref name="timeSpan"/> after an initial "false" is emitted by <paramref name="source"/>.
         /// If a "true" is emitted during the <paramref name="timeSpan"/>, it will be emitted immediately after the timer is completed.
         /// </summary>
         /// <param name="source"></param>
