@@ -1,5 +1,9 @@
 # Reactive.Boolean
 
+[![GitHub license](https://img.shields.io/github/license/DevJasperNL/Reactive.Boolean?label=License)](https://github.com/DevJasperNL/Reactive.Boolean?tab=MIT-1-ov-file)
+[![GitHub release](https://img.shields.io/github/v/release/DevJasperNL/Reactive.Boolean?label=Release)](https://github.com/DevJasperNL/Reactive.Boolean/releases/latest)
+[![Build Status](https://github.com/DevJasperNL/Reactive.Boolean/actions/workflows/ci-build-and-test.yml/badge.svg)](https://github.com/DevJasperNL/Reactive.Boolean/actions/workflows/ci-build-and-test.yml)
+
 Reactive Extensions meant specifically for implementations of `IObservable<bool>`
 
 This documentation uses marble diagrams to explain the transformations of `IObservable<bool>`. More on marble diagrams can be found in the documentation of [ReactiveX](https://reactivex.io/documentation/observable.html).
