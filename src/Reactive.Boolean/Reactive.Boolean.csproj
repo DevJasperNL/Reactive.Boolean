@@ -5,7 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Title>Reactive.Boolean</Title>
-    <Version>1.0.3</Version>
     <Authors>Jasper Lammers</Authors>
     <Company>DevJasper</Company>
     <Description>Reactive Extensions meant specifically for implementations of IObservable&lt;bool&gt;.</Description>
@@ -14,6 +13,8 @@
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	<PackageIcon>icon.png</PackageIcon>
+	<PackageReleaseNotes>https://github.com/DevJasperNL/Reactive.Boolean/releases</PackageReleaseNotes>
   </PropertyGroup>
   
   <ItemGroup>
@@ -22,6 +23,10 @@
       <PackagePath>\</PackagePath>
     </None>
 	<None Include="..\..\README.md">
+	  <Pack>True</Pack>
+	  <PackagePath>\</PackagePath>
+	</None>
+	<None Include="..\..\img\icon.png">
 	  <Pack>True</Pack>
 	  <PackagePath>\</PackagePath>
 	</None>

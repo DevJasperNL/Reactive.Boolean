@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reactive.Boolean", "Reactive.Boolean\Reactive.Boolean.csproj", "{26421834-16F5-4C9E-9370-B07598DBE047}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reactive.Boolean", "src\Reactive.Boolean\Reactive.Boolean.csproj", "{26421834-16F5-4C9E-9370-B07598DBE047}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reactive.Boolean.Tests", "Reactive.Boolean.Tests\Reactive.Boolean.Tests.csproj", "{2ABF3F34-88B8-485F-8BAD-0FAB3D61C2D2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reactive.Boolean.Tests", "tests\Reactive.Boolean.Tests\Reactive.Boolean.Tests.csproj", "{2ABF3F34-88B8-485F-8BAD-0FAB3D61C2D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
