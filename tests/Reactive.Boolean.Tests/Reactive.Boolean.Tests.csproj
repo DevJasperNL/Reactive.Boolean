@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Reactive.Boolean\Reactive.Boolean.csproj" />
+    <ProjectReference Include="..\..\src\Reactive.Boolean\Reactive.Boolean.csproj" />
   </ItemGroup>
 
   <ItemGroup>

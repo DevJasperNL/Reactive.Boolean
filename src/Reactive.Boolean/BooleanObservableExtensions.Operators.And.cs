@@ -2,6 +2,9 @@
 
 namespace Reactive.Boolean
 {
+    /// <summary>
+    /// Extension methods for <see cref="IObservable{Boolean}"/>.
+    /// </summary>
     public static partial class BooleanObservableExtensions
     {
         /// <summary>

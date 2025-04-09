@@ -23,7 +23,7 @@ Depending on the operator, there are several ways of handling value distinctness
 
 Returns an observable in which the input is inverted.
 
-![Not](docs/img/Not.png)
+![Not](img/Not.png)
 
 ### And
 
@@ -34,19 +34,19 @@ The `And` method accepts three values to determine distinctness of the output:
 
 DistinctUntilChanged is applied to the returned observable, meaning a "true" can only be followed by a "false" and vice versa.
 
-![And](docs/img/And.png)
+![And](img/And.png)
 
 **InputDistinctUntilChanged**
 
 DistinctUntilChanged is applied to the inputs only. Meaning that consecutive values on the input do not change the output, but input changes on different inputs can. For example, going from "false", "false" to "true", "false" will emit consecutive "false" values.
 
-![And (input distinct)](docs/img/And%20(input%20distinct).png)
+![And (input distinct)](img/And%20(input%20distinct).png)
 
 **NotDistinct**
 
 DistinctUntilChanged is never applied. Meaning both consecutive input and output values will be emitted.
 
-![And (not distinct)](docs/img/And%20(not%20distinct).png)
+![And (not distinct)](img/And%20(not%20distinct).png)
 
 ### Or
 
@@ -57,19 +57,19 @@ The `Or` method accepts three values to determine distinctness of the output:
 
 DistinctUntilChanged is applied to the returned observable, meaning a "true" can only be followed by a "false" and vice versa.
 
-![Or](docs/img/Or.png)
+![Or](img/Or.png)
 
 **InputDistinctUntilChanged**
 
 DistinctUntilChanged is applied to the inputs only. Meaning that consecutive values on the input do not change the output, but input changes on different inputs can. For example, going from "true", "false" to "true", "true" will emit consecutive "true" values.
 
-![Or (input distinct)](docs/img/Or%20(input%20distinct).png)
+![Or (input distinct)](img/Or%20(input%20distinct).png)
 
 **NotDistinct**
 
 DistinctUntilChanged is never applied. Meaning both consecutive input and output values will be emitted.
 
-![Or (not distinct)](docs/img/Or%20(not%20distinct).png)
+![Or (not distinct)](img/Or%20(not%20distinct).png)
 
 ### XOr
 
@@ -80,13 +80,13 @@ As changing distinct inputs will always result in a distinct XOR output, the `Xo
 
 DistinctUntilChanged is applied to the result.
 
-![XOr](docs/img/XOr.png)
+![XOr](img/XOr.png)
 
 **distinctUntilChanged = false**
 
 DistinctUntilChanged is not applied to the result.
 
-![XOr (not distinct)](docs/img/XOr%20(not%20distinct).png)
+![XOr (not distinct)](img/XOr%20(not%20distinct).png)
 
 ### Inverted operators
 
@@ -101,7 +101,7 @@ This library also has extension methods for scheduling:
 Returns an observable that won't emit `false` for at least the provided timespan after an initial `true` is emitted by the source observable.
 If a `false` is emitted during the provided timespan, it will be emitted immediately after the timer is completed.
 
-![TrueForAtLeast](docs/img/TrueForAtLeast.png)
+![TrueForAtLeast](img/TrueForAtLeast.png)
 
 **Example Use Case**
 
@@ -120,7 +120,7 @@ buttonPressed
 
 Returns an observable that delays the first `false` that is emitted after a `true` by the source for a duration of a provided timespan.
 
-![PersistTrueFor](docs/img/PersistTrueFor.png)
+![PersistTrueFor](img/PersistTrueFor.png)
 
 **Example Use Case**
 
@@ -139,7 +139,7 @@ motionDetected
 
 Returns an observable that emits `true` once the source does not emit `false` for a minimum of the provided timespan.
 
-![WhenTrueFor](docs/img/WhenTrueFor.png)
+![WhenTrueFor](img/WhenTrueFor.png)
 
 **Example Use Case**
 
@@ -156,7 +156,7 @@ washingMachineCurrentIsZero
 
 Returns an observable that will automatically emit `false` if the source does not emit a `false` itself within the provided timespan after emitting `true`.
 
-![LimitTrueDuration](docs/img/LimitTrueDuration.png)
+![LimitTrueDuration](img/LimitTrueDuration.png)
 
 **Example Use Case**
 
