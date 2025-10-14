@@ -5,7 +5,7 @@ namespace Reactive.Boolean.Tests
     [TestClass]
     public class BooleanObservableExtensionsOperatorsAndTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, false, false)]
         [DataRow(false, true, false)]
         [DataRow(true, false, false)]
@@ -28,7 +28,7 @@ namespace Reactive.Boolean.Tests
             Assert.AreEqual(expectedOutput, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, false, false, false)]
         [DataRow(false, false, true, false)]
         [DataRow(false, true, false, false)]

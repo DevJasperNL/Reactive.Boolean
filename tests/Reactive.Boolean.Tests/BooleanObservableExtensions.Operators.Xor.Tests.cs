@@ -5,7 +5,7 @@ namespace Reactive.Boolean.Tests
     [TestClass]
     public class BooleanObservableExtensionsOperatorsXorTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, false, false)]
         [DataRow(false, true, true)]
         [DataRow(true, false, true)]

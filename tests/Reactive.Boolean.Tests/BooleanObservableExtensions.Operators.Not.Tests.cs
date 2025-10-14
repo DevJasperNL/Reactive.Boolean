@@ -5,7 +5,7 @@ namespace Reactive.Boolean.Tests
     [TestClass]
     public class BooleanObservableExtensionsOperatorsNotTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, true)]
         [DataRow(true, false)]
         public void Not(bool input, bool expectedOutput)
