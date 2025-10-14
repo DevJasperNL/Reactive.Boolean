@@ -6,7 +6,7 @@ namespace Reactive.Boolean.Tests
     [TestClass]
     public class BooleanObservableExtensionsSchedulingTrueForAtLeastTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, false, true)]
         [DataRow(false, false, false)]
         [DataRow(true, false, true)]
@@ -32,7 +32,7 @@ namespace Reactive.Boolean.Tests
             Assert.AreEqual(initialValue, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, true)]
         [DataRow(false, false)]
         [DataRow(true, true)]
@@ -55,7 +55,7 @@ namespace Reactive.Boolean.Tests
             CollectionAssert.AreEqual(new[] { initialValue }, results);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, true)]
         [DataRow(false, false)]
         [DataRow(true, true)]
@@ -79,7 +79,7 @@ namespace Reactive.Boolean.Tests
             CollectionAssert.AreEqual(new[] { initialValue, initialValue }, results);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, false)]
         [DataRow(true, false)]
         [DataRow(false, true)]
@@ -102,7 +102,7 @@ namespace Reactive.Boolean.Tests
             Assert.AreEqual(true, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, false)]
         [DataRow(true, false)]
         [DataRow(false, true)]
@@ -127,7 +127,7 @@ namespace Reactive.Boolean.Tests
             Assert.AreEqual(false, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, false)]
         [DataRow(true, false)]
         [DataRow(false, true)]
@@ -162,7 +162,7 @@ namespace Reactive.Boolean.Tests
             Assert.AreEqual(false, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, false)]
         [DataRow(true, false)]
         [DataRow(false, true)]
@@ -291,7 +291,7 @@ namespace Reactive.Boolean.Tests
             CollectionAssert.AreEqual(new[] { true, true, false, false }, results);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, false)]
         [DataRow(true, false)]
         [DataRow(false, true)]
@@ -316,7 +316,7 @@ namespace Reactive.Boolean.Tests
             Assert.IsTrue(completed);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, false)]
         [DataRow(true, false)]
         [DataRow(false, true)]

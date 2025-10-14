@@ -6,7 +6,7 @@ namespace Reactive.Boolean.Tests
     [TestClass]
     public class BooleanObservableExtensionsSchedulingPersistTrueForTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true, true)]
         [DataRow(true, false)]
         [DataRow(false, true)]
@@ -28,7 +28,7 @@ namespace Reactive.Boolean.Tests
             Assert.AreEqual(initialValue, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, true)]
         [DataRow(false, false)]
         [DataRow(true, true)]
@@ -51,7 +51,7 @@ namespace Reactive.Boolean.Tests
             CollectionAssert.AreEqual(new[] { initialValue }, results);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public void PersistTrueFor_RemainsTrue(bool resetTimerOnConsecutiveFalse)
@@ -73,7 +73,7 @@ namespace Reactive.Boolean.Tests
             Assert.AreEqual(true, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public void PersistTrueFor_RemainsTrueForTimeSpan(bool resetTimerOnConsecutiveFalse)
@@ -96,7 +96,7 @@ namespace Reactive.Boolean.Tests
             Assert.AreEqual(false, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public void PersistTrueFor_RemainsTrueForTimeSpan_Repeat(bool resetTimerOnConsecutiveFalse)
@@ -129,7 +129,7 @@ namespace Reactive.Boolean.Tests
             Assert.AreEqual(false, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public void PersistTrueFor_RemainsTrueForTimeSpanAfterFalse(bool resetTimerOnConsecutiveFalse)
@@ -155,7 +155,7 @@ namespace Reactive.Boolean.Tests
             Assert.AreEqual(false, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public void PersistTrueFor_TrueResetsTimer(bool resetTimerOnConsecutiveFalse)
@@ -229,7 +229,7 @@ namespace Reactive.Boolean.Tests
             CollectionAssert.AreEqual(new[] { true, false }, results);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public void PersistTrueFor_CompleteIsImmediate(bool resetTimerOnConsecutiveFalse)
@@ -252,7 +252,7 @@ namespace Reactive.Boolean.Tests
             Assert.IsTrue(completed);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public void PersistTrueFor_Error(bool resetTimerOnConsecutiveFalse)
