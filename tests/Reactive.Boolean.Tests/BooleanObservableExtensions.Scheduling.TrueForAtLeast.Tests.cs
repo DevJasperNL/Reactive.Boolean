@@ -1,4 +1,5 @@
 using Microsoft.Reactive.Testing;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
 namespace Reactive.Boolean.Tests
@@ -99,7 +100,7 @@ namespace Reactive.Boolean.Tests
             subject.OnNext(false);
 
             // Assert
-            Assert.AreEqual(true, result);
+            Assert.IsTrue(result);
         }
 
         [TestMethod]
@@ -118,13 +119,13 @@ namespace Reactive.Boolean.Tests
 
             subject.OnNext(true);
             subject.OnNext(false);
-            Assert.AreEqual(true, result);
+            Assert.IsTrue(result);
 
             scheduler.AdvanceBy(1);
-            Assert.AreEqual(true, result);
+            Assert.IsTrue(result);
             
             scheduler.AdvanceBy(1);
-            Assert.AreEqual(false, result);
+            Assert.IsFalse(result);
         }
 
         [TestMethod]
@@ -143,23 +144,23 @@ namespace Reactive.Boolean.Tests
 
             subject.OnNext(true);
             subject.OnNext(false);
-            Assert.AreEqual(true, result);
+            Assert.IsTrue(result);
 
             scheduler.AdvanceBy(1);
-            Assert.AreEqual(true, result);
+            Assert.IsTrue(result);
 
             scheduler.AdvanceBy(1);
-            Assert.AreEqual(false, result);
+            Assert.IsFalse(result);
 
             subject.OnNext(true);
             subject.OnNext(false);
-            Assert.AreEqual(true, result);
+            Assert.IsTrue(result);
 
             scheduler.AdvanceBy(1);
-            Assert.AreEqual(true, result);
+            Assert.IsTrue(result);
 
             scheduler.AdvanceBy(1);
-            Assert.AreEqual(false, result);
+            Assert.IsFalse(result);
         }
 
         [TestMethod]
@@ -177,14 +178,14 @@ namespace Reactive.Boolean.Tests
             memoryObservable.Subscribe(b => result = b);
 
             subject.OnNext(true);
-            Assert.AreEqual(true, result);
+            Assert.IsTrue(result);
 
             scheduler.AdvanceBy(1);
             scheduler.AdvanceBy(1);
-            Assert.AreEqual(true, result);
+            Assert.IsTrue(result);
 
             subject.OnNext(false);
-            Assert.AreEqual(false, result);
+            Assert.IsFalse(result);
         }
 
         [TestMethod]
@@ -310,7 +311,7 @@ namespace Reactive.Boolean.Tests
             subject.OnNext(false);
 
             scheduler.AdvanceBy(1);
-            Assert.AreEqual(true, result);
+            Assert.IsTrue(result);
 
             subject.OnCompleted();
             Assert.IsTrue(completed);
@@ -335,7 +336,7 @@ namespace Reactive.Boolean.Tests
             subject.OnNext(false);
 
             scheduler.AdvanceBy(1);
-            Assert.AreEqual(true, result);
+            Assert.IsTrue(result);
 
             var exception = new InvalidOperationException("This is a test");
             subject.OnError(exception);
