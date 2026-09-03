@@ -32,6 +32,11 @@ internal abstract class TimedBooleanOperator(
     protected bool TimerRunning { get; private set; }
 
     /// <summary>
+    /// The value most recently handed to the observer. Null until something has been emitted.
+    /// </summary>
+    protected bool? LastEmittedValue => _lastEmittedValue;
+
+    /// <summary>
     /// Whether the running timer will emit a value when it elapses. Decides whether
     /// <see cref="CompletionBehavior.CompleteAfterTimer"/> has anything to wait for.
     /// </summary>

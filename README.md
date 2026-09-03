@@ -106,7 +106,7 @@ All scheduling methods share three optional parameters:
 
 **resetTimerOnConsecutiveTrue / resetTimerOnConsecutiveFalse (default `false`)**
 
-A real transition (for example `false` to `true` for `TrueForAtLeast`) always starts the timer. This flag decides whether a *repeated* value, emitted while the timer is running, restarts it.
+A real transition (for example `false` to `true` for `TrueForAtLeast`) always starts the timer. This flag decides whether a *repeated* value, emitted while the timer is running, restarts it. For the symmetric `WhenStableFor` the flag is called `resetTimerOnConsecutiveValue`.
 
 **distinctUntilChanged (default `true`)**
 
@@ -164,6 +164,8 @@ motionDetected
 
 Returns an observable that emits `true` once the source does not emit `false` for a minimum of the provided timespan. The first value emitted is always `false`. With `distinctUntilChanged: false`, `true` values received while the timer is running are not emitted.
 
+Note that `WhenTrueFor` and `PersistFalseFor` (and likewise `WhenFalseFor` and `PersistTrueFor`) behave identically once the source has emitted both values. They only differ in how the first value is handled: `WhenTrueFor` always emits `false` first, `PersistFalseFor` passes the first value through.
+
 ![WhenTrueFor](img/WhenTrueFor.png)
 
 **Example Use Case**
@@ -175,6 +177,25 @@ var washingMachineCurrentIsZero = washingMachineCurrent.StateChanges().Select(s 
 washingMachineCurrentIsZero
     .WhenTrueFor(TimeSpan.FromMinutes(1), scheduler)
     .SubscribeTrue(() => notification.Send("Washing machine is done!"));
+```
+
+### WhenStableFor
+
+Returns an observable that only emits a value once the source has held it for a minimum of the provided timespan, in both directions. The first value of the source is emitted immediately. A change that reverts before the timer runs out is never emitted. With `resetTimerOnConsecutiveValue: true`, a repeated pending value restarts the timer. With `distinctUntilChanged: false`, values equal to the current output are passed through, while values received during the timer are not emitted.
+
+![WhenStableFor](img/WhenStableFor.png)
+
+**Example Use Case**
+
+Ignore a bouncing door contact by only reacting once the door has been open or closed for 2 seconds.
+```csharp
+// doorOpen is a IObservable<bool>
+var doorOpen = doorContact.StateChanges().Select(s => s.State == "open");
+doorOpen
+    .WhenStableFor(TimeSpan.FromSeconds(2), scheduler)
+    .SubscribeTrueFalse(
+        () => notification.Send("Door opened"),
+        () => notification.Send("Door closed"));
 ```
 
 ### LimitTrueDuration
@@ -196,6 +217,29 @@ closetDoorOpen
         () => closetLight.TurnOn(),
         () => closetLight.TurnOff());
 ```
+
+### PulseTrueFor
+
+Returns an observable that emits `true` for exactly the provided timespan after the source transitions to `true`, followed by `false`. A `false` emitted by the source during the pulse is withheld until the pulse ends, and a `true` that outlasts the pulse does not extend it. A `true` that follows a `false` always starts a new pulse. With `resetTimerOnConsecutiveTrue: true`, every repeated `true` restarts the pulse (a retriggerable pulse), also after the pulse has ended. With `distinctUntilChanged: false`, `false` values received during the pulse are not emitted; the pulse always ends with a single `false`.
+
+![PulseTrueFor](img/PulseTrueFor.png)
+
+**Example Use Case**
+
+Ring the doorbell chime for one second when the button is pressed, no matter how long it is held.
+```csharp
+// doorbellPressed is a IObservable<bool>
+var doorbellPressed = doorbell.StateChanges().Select(s => s.State == "pressed");
+doorbellPressed
+    .PulseTrueFor(TimeSpan.FromSeconds(1), scheduler)
+    .SubscribeTrueFalse(
+        () => chime.TurnOn(),
+        () => chime.TurnOff());
+```
+
+### Inverted scheduling methods
+
+Every scheduling method except `WhenStableFor` has a `False` mirror (`FalseForAtLeast`, `PersistFalseFor`, `WhenFalseFor`, `LimitFalseDuration`, `PulseFalseFor`) that applies the same logic to `false` values.
 
 ## Subscribing
 
