@@ -86,7 +86,8 @@ namespace Reactive.Boolean
             }
 
             return Observable.Create<bool>(observer =>
-                new PersistTrueForOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveFalse, completionBehavior)
+                new DelayedTransitionOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveFalse, completionBehavior,
+                        delayTrue: false, delayFalse: true, assumedInitialValue: null)
                     .Run(source));
         }
 
@@ -139,7 +140,8 @@ namespace Reactive.Boolean
             }
 
             return Observable.Create<bool>(observer =>
-                new WhenTrueForOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, completionBehavior)
+                new DelayedTransitionOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, completionBehavior,
+                        delayTrue: true, delayFalse: false, assumedInitialValue: false)
                     .Run(source));
         }
 
@@ -192,7 +194,8 @@ namespace Reactive.Boolean
             }
 
             return Observable.Create<bool>(observer =>
-                new WhenStableForOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveValue, completionBehavior)
+                new DelayedTransitionOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveValue, completionBehavior,
+                        delayTrue: true, delayFalse: true, assumedInitialValue: null)
                     .Run(source));
         }
 
