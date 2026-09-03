@@ -37,6 +37,11 @@ internal abstract class TimedBooleanOperator(
     protected bool? LastEmittedValue => _lastEmittedValue;
 
     /// <summary>
+    /// Whether the source has completed while completion is deferred until the timer elapses.
+    /// </summary>
+    protected bool SourceCompleted => _sourceCompleted;
+
+    /// <summary>
     /// Whether the running timer will emit a value when it elapses. Decides whether
     /// <see cref="CompletionBehavior.CompleteAfterTimer"/> has anything to wait for.
     /// </summary>
@@ -70,11 +75,13 @@ internal abstract class TimedBooleanOperator(
         observer.OnNext(value);
     }
 
-    protected void StartTimer()
+    protected void StartTimer() => StartTimer(timeSpan);
+
+    protected void StartTimer(TimeSpan dueTime)
     {
         var generation = ++_timerGeneration;
         TimerRunning = true;
-        _timer.Disposable = scheduler.Schedule(timeSpan, () => TimerElapsed(generation));
+        _timer.Disposable = scheduler.Schedule(dueTime, () => TimerElapsed(generation));
     }
 
     protected void StopTimer()

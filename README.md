@@ -117,14 +117,14 @@ When `true`, the resulting observable never emits the same value twice in a row.
 Determines what happens when the source completes while the timer is still running:
 
 - `CompleteImmediately`: the result completes at once. A value that the timer would still have emitted is dropped.
-- `CompleteAfterTimer`: the result stays alive until the timer runs out, emits the pending value and completes afterwards. When nothing is pending it completes immediately.
+- `CompleteAfterTimer`: the result stays alive until the timer runs out, emits the pending value and completes afterwards. When nothing is pending it completes immediately. For `BlinkWhileTrue` this means finishing the current `true` phase, emitting `false` and completing afterwards.
 
 Errors from the source are always forwarded immediately.
 
 ### TrueForAtLeast
 
 Returns an observable that won't emit `false` for at least the provided timespan after an initial `true` is emitted by the source observable.
-If a `false` is emitted during the provided timespan, it will be emitted immediately after the timer is completed. With `distinctUntilChanged: false`, multiple `false` values received during the timespan are emitted as a single `false`.
+If a `false` is emitted during the provided timespan, it will be emitted immediately after the timer is completed. With `distinctUntilChanged: false`, multiple `false` values received during the timespan are emitted as a single `false`. A repeated `true` received after the timer ran out only starts a new timer with `resetTimerOnConsecutiveTrue: true`.
 
 ![TrueForAtLeast](img/TrueForAtLeast.png)
 
@@ -183,8 +183,6 @@ washingMachineCurrentIsZero
 
 Returns an observable that only emits a value once the source has held it for a minimum of the provided timespan, in both directions. The first value of the source is emitted immediately. A change that reverts before the timer runs out is never emitted. With `resetTimerOnConsecutiveValue: true`, a repeated pending value restarts the timer. With `distinctUntilChanged: false`, values equal to the current output are passed through, while values received during the timer are not emitted.
 
-![WhenStableFor](img/WhenStableFor.png)
-
 **Example Use Case**
 
 Ignore a bouncing door contact by only reacting once the door has been open or closed for 2 seconds.
@@ -222,8 +220,6 @@ closetDoorOpen
 
 Returns an observable that emits `true` for exactly the provided timespan after the source transitions to `true`, followed by `false`. A `false` emitted by the source during the pulse is withheld until the pulse ends, and a `true` that outlasts the pulse does not extend it. A `true` that follows a `false` always starts a new pulse. With `resetTimerOnConsecutiveTrue: true`, every repeated `true` restarts the pulse (a retriggerable pulse), also after the pulse has ended. With `distinctUntilChanged: false`, `false` values received during the pulse are not emitted; the pulse always ends with a single `false`.
 
-![PulseTrueFor](img/PulseTrueFor.png)
-
 **Example Use Case**
 
 Ring the doorbell chime for one second when the button is pressed, no matter how long it is held.
@@ -237,9 +233,26 @@ doorbellPressed
         () => chime.TurnOff());
 ```
 
+### BlinkWhileTrue
+
+Returns an observable that alternates between `true` and `false` while the source is `true`, starting with `true`. A `false` from the source stops the blinking immediately, also in the middle of a phase. The single-timespan overload uses the same duration for both phases; the `onDuration`/`offDuration` overload lets them differ. A repeated `true` from the source is ignored unless `resetTimerOnConsecutiveTrue: true`, which restarts the `true` phase. Zero or negative durations throw an `ArgumentOutOfRangeException`.
+
+**Example Use Case**
+
+Flash a light every 500 milliseconds while the alarm is triggered.
+```csharp
+// alarmTriggered is a IObservable<bool>
+var alarmTriggered = alarm.StateChanges().Select(s => s.State == "triggered");
+alarmTriggered
+    .BlinkWhileTrue(TimeSpan.FromMilliseconds(500), scheduler)
+    .SubscribeTrueFalse(
+        () => light.TurnOn(),
+        () => light.TurnOff());
+```
+
 ### Inverted scheduling methods
 
-Every scheduling method except `WhenStableFor` has a `False` mirror (`FalseForAtLeast`, `PersistFalseFor`, `WhenFalseFor`, `LimitFalseDuration`, `PulseFalseFor`) that applies the same logic to `false` values.
+Every scheduling method except `WhenStableFor` has a `False` mirror (`FalseForAtLeast`, `PersistFalseFor`, `WhenFalseFor`, `LimitFalseDuration`, `PulseFalseFor`, `BlinkWhileFalse`) that applies the same logic to `false` values.
 
 ## Subscribing
 

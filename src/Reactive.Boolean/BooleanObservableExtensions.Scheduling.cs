@@ -13,7 +13,7 @@ namespace Reactive.Boolean
         /// <param name="timeSpan"></param>
         /// <param name="scheduler"></param>
         /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Both consecutive "true" and "false" values will be emitted. Note that consecutive "false" values that occur during the timer, will only be emitted as a single "false" once the timer runs out.</param>
-        /// <param name="resetTimerOnConsecutiveTrue">If "true", every "true" that is emitted by <paramref name="source"/> will reset the timer. A "true" that follows a "false" always (re)starts the timer.</param>
+        /// <param name="resetTimerOnConsecutiveTrue">If "true", every "true" that is emitted by <paramref name="source"/> will reset the timer. A "true" that follows a "false" always (re)starts the timer. A repeated "true" received after the timer ran out only starts a new timer when this is set.</param>
         /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes while a "false" is being withheld: drop it and complete immediately (default), or emit it once the timer runs out and complete afterwards.</param>
         /// <returns></returns>
         public static IObservable<bool> TrueForAtLeast(
@@ -32,7 +32,8 @@ namespace Reactive.Boolean
             }
 
             return Observable.Create<bool>(observer =>
-                new TrueForAtLeastOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, completionBehavior)
+                new TimedWindowOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, completionBehavior,
+                        withholdFalseDuringWindow: true, forceFalseAtEnd: false)
                     .Run(source));
         }
 
@@ -44,7 +45,7 @@ namespace Reactive.Boolean
         /// <param name="timeSpan"></param>
         /// <param name="scheduler"></param>
         /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Both consecutive "true" and "false" values will be emitted. Note that consecutive "true" values that occur during the timer, will only be emitted as a single "true" once the timer runs out.</param>
-        /// <param name="resetTimerOnConsecutiveFalse">If "true", every "false" that is emitted by <paramref name="source"/> will reset the timer. A "false" that follows a "true" always (re)starts the timer.</param>
+        /// <param name="resetTimerOnConsecutiveFalse">If "true", every "false" that is emitted by <paramref name="source"/> will reset the timer. A "false" that follows a "true" always (re)starts the timer. A repeated "false" received after the timer ran out only starts a new timer when this is set.</param>
         /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes while a "true" is being withheld: drop it and complete immediately (default), or emit it once the timer runs out and complete afterwards.</param>
         /// <returns></returns>
         public static IObservable<bool> FalseForAtLeast(
@@ -222,7 +223,8 @@ namespace Reactive.Boolean
             ArgumentNullException.ThrowIfNull(scheduler);
 
             return Observable.Create<bool>(observer =>
-                new LimitTrueDurationOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, completionBehavior)
+                new TimedWindowOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, completionBehavior,
+                        withholdFalseDuringWindow: false, forceFalseAtEnd: true)
                     .Run(source));
         }
 
@@ -276,7 +278,8 @@ namespace Reactive.Boolean
             }
 
             return Observable.Create<bool>(observer =>
-                new PulseTrueForOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, completionBehavior)
+                new TimedWindowOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, completionBehavior,
+                        withholdFalseDuringWindow: true, forceFalseAtEnd: true)
                     .Run(source));
         }
 
@@ -301,6 +304,102 @@ namespace Reactive.Boolean
             source
                 .Not()
                 .PulseTrueFor(timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveFalse, completionBehavior)
+                .Not();
+
+        /// <summary>
+        /// Returns an observable that alternates between "true" and "false" while <paramref name="source"/> is "true", starting with "true".
+        /// A "false" emitted by <paramref name="source"/> stops the blinking immediately.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="interval">How long each "true" and each "false" phase lasts.</param>
+        /// <param name="scheduler"></param>
+        /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Consecutive "false" values from <paramref name="source"/> are emitted. Repeated "true" values received while blinking are not emitted.</param>
+        /// <param name="resetTimerOnConsecutiveTrue">If "true", every "true" that is emitted by <paramref name="source"/> restarts the "true" phase.</param>
+        /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes while blinking: complete immediately (default), or finish the current "true" phase, emit "false" and complete afterwards. Completion during a "false" phase is always immediate.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> is zero or negative.</exception>
+        public static IObservable<bool> BlinkWhileTrue(
+            this IObservable<bool> source,
+            TimeSpan interval,
+            IScheduler scheduler,
+            bool distinctUntilChanged = true,
+            bool resetTimerOnConsecutiveTrue = false,
+            CompletionBehavior completionBehavior = CompletionBehavior.CompleteImmediately) =>
+            source.BlinkWhileTrue(interval, interval, scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, completionBehavior);
+
+        /// <summary>
+        /// Returns an observable that alternates between "true" and "false" while <paramref name="source"/> is "true", starting with "true".
+        /// A "false" emitted by <paramref name="source"/> stops the blinking immediately.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="onDuration">How long each "true" phase lasts.</param>
+        /// <param name="offDuration">How long each "false" phase lasts.</param>
+        /// <param name="scheduler"></param>
+        /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Consecutive "false" values from <paramref name="source"/> are emitted. Repeated "true" values received while blinking are not emitted.</param>
+        /// <param name="resetTimerOnConsecutiveTrue">If "true", every "true" that is emitted by <paramref name="source"/> restarts the "true" phase.</param>
+        /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes while blinking: complete immediately (default), or finish the current "true" phase, emit "false" and complete afterwards. Completion during a "false" phase is always immediate.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="onDuration"/> or <paramref name="offDuration"/> is zero or negative.</exception>
+        public static IObservable<bool> BlinkWhileTrue(
+            this IObservable<bool> source,
+            TimeSpan onDuration,
+            TimeSpan offDuration,
+            IScheduler scheduler,
+            bool distinctUntilChanged = true,
+            bool resetTimerOnConsecutiveTrue = false,
+            CompletionBehavior completionBehavior = CompletionBehavior.CompleteImmediately)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(scheduler);
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(onDuration, TimeSpan.Zero);
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(offDuration, TimeSpan.Zero);
+
+            return Observable.Create<bool>(observer =>
+                new BlinkWhileTrueOperator(observer, onDuration, offDuration, scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, completionBehavior)
+                    .Run(source));
+        }
+
+        /// <summary>
+        /// Returns an observable that alternates between "false" and "true" while <paramref name="source"/> is "false", starting with "false".
+        /// A "true" emitted by <paramref name="source"/> stops the blinking immediately.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="interval">How long each "false" and each "true" phase lasts.</param>
+        /// <param name="scheduler"></param>
+        /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Consecutive "true" values from <paramref name="source"/> are emitted. Repeated "false" values received while blinking are not emitted.</param>
+        /// <param name="resetTimerOnConsecutiveFalse">If "true", every "false" that is emitted by <paramref name="source"/> restarts the "false" phase.</param>
+        /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes while blinking: complete immediately (default), or finish the current "false" phase, emit "true" and complete afterwards. Completion during a "true" phase is always immediate.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> is zero or negative.</exception>
+        public static IObservable<bool> BlinkWhileFalse(
+            this IObservable<bool> source,
+            TimeSpan interval,
+            IScheduler scheduler,
+            bool distinctUntilChanged = true,
+            bool resetTimerOnConsecutiveFalse = false,
+            CompletionBehavior completionBehavior = CompletionBehavior.CompleteImmediately) =>
+            source.BlinkWhileFalse(interval, interval, scheduler, distinctUntilChanged, resetTimerOnConsecutiveFalse, completionBehavior);
+
+        /// <summary>
+        /// Returns an observable that alternates between "false" and "true" while <paramref name="source"/> is "false", starting with "false".
+        /// A "true" emitted by <paramref name="source"/> stops the blinking immediately.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="offDuration">How long each "false" phase lasts.</param>
+        /// <param name="onDuration">How long each "true" phase lasts.</param>
+        /// <param name="scheduler"></param>
+        /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Consecutive "true" values from <paramref name="source"/> are emitted. Repeated "false" values received while blinking are not emitted.</param>
+        /// <param name="resetTimerOnConsecutiveFalse">If "true", every "false" that is emitted by <paramref name="source"/> restarts the "false" phase.</param>
+        /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes while blinking: complete immediately (default), or finish the current "false" phase, emit "true" and complete afterwards. Completion during a "true" phase is always immediate.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="offDuration"/> or <paramref name="onDuration"/> is zero or negative.</exception>
+        public static IObservable<bool> BlinkWhileFalse(
+            this IObservable<bool> source,
+            TimeSpan offDuration,
+            TimeSpan onDuration,
+            IScheduler scheduler,
+            bool distinctUntilChanged = true,
+            bool resetTimerOnConsecutiveFalse = false,
+            CompletionBehavior completionBehavior = CompletionBehavior.CompleteImmediately) =>
+            source
+                .Not()
+                .BlinkWhileTrue(offDuration, onDuration, scheduler, distinctUntilChanged, resetTimerOnConsecutiveFalse, completionBehavior)
                 .Not();
     }
 }

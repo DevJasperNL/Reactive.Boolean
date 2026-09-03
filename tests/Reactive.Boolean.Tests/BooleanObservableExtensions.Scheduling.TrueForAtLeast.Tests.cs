@@ -189,6 +189,48 @@ namespace Reactive.Boolean.Tests
         }
 
         [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void TrueForAtLeast_RepeatedTrueAfterTimer_DoesNotRestartWithoutReset(bool distinctUntilChanged)
+        {
+            var subject = new Subject<bool>();
+            var scheduler = new TestScheduler();
+            var memoryObservable = subject.TrueForAtLeast(TimeSpan.FromTicks(2), scheduler, distinctUntilChanged);
+
+            var results = new List<bool>();
+            memoryObservable.Subscribe(results.Add);
+
+            subject.OnNext(true);
+            scheduler.AdvanceBy(2);
+            subject.OnNext(true); // The source is still "true" after the minimum passed.
+            subject.OnNext(false);
+            CollectionAssert.AreEqual(distinctUntilChanged ? new[] { true, false } : new[] { true, true, false }, results);
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void TrueForAtLeast_RepeatedTrueAfterTimer_RestartsWithReset(bool distinctUntilChanged)
+        {
+            var subject = new Subject<bool>();
+            var scheduler = new TestScheduler();
+            var memoryObservable = subject.TrueForAtLeast(TimeSpan.FromTicks(2), scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue: true);
+
+            var results = new List<bool>();
+            memoryObservable.Subscribe(results.Add);
+
+            subject.OnNext(true);
+            scheduler.AdvanceBy(2);
+            subject.OnNext(true);
+            subject.OnNext(false);
+            var expected = distinctUntilChanged ? new[] { true } : new[] { true, true };
+            CollectionAssert.AreEqual(expected, results);
+
+            scheduler.AdvanceBy(2);
+            CollectionAssert.AreEqual(expected.Append(false).ToArray(), results);
+        }
+
+        [TestMethod]
         public void TrueForAtLeast_TimerNotResetOnConsecutiveTrue_Distinct()
         {
             var subject = new Subject<bool>();
