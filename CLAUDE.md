@@ -53,5 +53,5 @@ Test file naming mirrors the source: `BooleanObservableExtensions.Scheduling.<Op
 ## Conventions
 
 - README.md is packed into the NuGet package and is the user-facing documentation. When adding or changing operator behaviour, update the matching README section (and its marble diagram in `img/` if one exists) in the same change.
-- Sources use CRLF line endings; files under `src/` also start with a UTF-8 BOM
+- Sources use CRLF line endings; files under `src/` also start with a UTF-8 BOM.
 - PRs to `main` must carry at least one `pr:` label (`pr: bugfix`, `pr: new-feature`, `pr: enhancement`, `pr: breaking change`, `pr: documentation`, `pr: dependency-update`). Release-drafter builds the release notes from PR titles grouped by these labels, and publishing a GitHub release triggers the NuGet push with the tag as the package version.
