@@ -98,12 +98,33 @@ This library also implements inverted operators `Nand`, `Nor` and `Xnor`.
 
 ## Scheduling
 
-This library also has extension methods for scheduling:
+This library also has extension methods for scheduling. Every scheduling method takes an `IScheduler`, subscribes to the source exactly once, and behaves the same whether values arrive one at a time from a hot subject or in a burst from a cold observable (for example `Observable.Return(true).Concat(...)` or `SelectMany`).
+
+### Common options
+
+All scheduling methods share three optional parameters:
+
+**resetTimerOnConsecutiveTrue / resetTimerOnConsecutiveFalse (default `false`)**
+
+A real transition (for example `false` to `true` for `TrueForAtLeast`) always starts the timer. This flag decides whether a *repeated* value, emitted while the timer is running, restarts it. For the symmetric `WhenStableFor` the flag is called `resetTimerOnConsecutiveValue`.
+
+**distinctUntilChanged (default `true`)**
+
+When `true`, the resulting observable never emits the same value twice in a row. When `false`, consecutive values from the source are passed through, except where the timer withholds them (details per method below).
+
+**completionBehavior (default `CompletionBehavior.CompleteImmediately`)**
+
+Determines what happens when the source completes while the timer is still running:
+
+- `CompleteImmediately`: the result completes at once. A value that the timer would still have emitted is dropped.
+- `CompleteAfterTimer`: the result stays alive until the timer runs out, emits the pending value and completes afterwards. When nothing is pending it completes immediately. For `BlinkWhileTrue` this means finishing the current `true` phase, emitting `false` and completing afterwards.
+
+Errors from the source are always forwarded immediately.
 
 ### TrueForAtLeast
 
 Returns an observable that won't emit `false` for at least the provided timespan after an initial `true` is emitted by the source observable.
-If a `false` is emitted during the provided timespan, it will be emitted immediately after the timer is completed.
+If a `false` is emitted during the provided timespan, it will be emitted immediately after the timer is completed. With `distinctUntilChanged: false`, multiple `false` values received during the timespan are emitted as a single `false`. A repeated `true` received after the timer ran out only starts a new timer with `resetTimerOnConsecutiveTrue: true`.
 
 ![TrueForAtLeast](img/TrueForAtLeast.png)
 
@@ -122,7 +143,7 @@ buttonPressed
 
 ### PersistTrueFor
 
-Returns an observable that delays the first `false` that is emitted after a `true` by the source for a duration of a provided timespan.
+Returns an observable that delays the first `false` that is emitted after a `true` by the source for a duration of a provided timespan. A `true` emitted during that time cancels the delayed `false`. With `distinctUntilChanged: false`, multiple `false` values received during the timespan are emitted as a single `false`.
 
 ![PersistTrueFor](img/PersistTrueFor.png)
 
@@ -141,7 +162,9 @@ motionDetected
 
 ### WhenTrueFor
 
-Returns an observable that emits `true` once the source does not emit `false` for a minimum of the provided timespan.
+Returns an observable that emits `true` once the source does not emit `false` for a minimum of the provided timespan. The first value emitted is always `false`. With `distinctUntilChanged: false`, `true` values received while the timer is running are not emitted.
+
+Note that `WhenTrueFor` and `PersistFalseFor` (and likewise `WhenFalseFor` and `PersistTrueFor`) behave identically once the source has emitted both values. They only differ in how the first value is handled: `WhenTrueFor` always emits `false` first, `PersistFalseFor` passes the first value through.
 
 ![WhenTrueFor](img/WhenTrueFor.png)
 
@@ -156,9 +179,27 @@ washingMachineCurrentIsZero
     .SubscribeTrue(() => notification.Send("Washing machine is done!"));
 ```
 
+### WhenStableFor
+
+Returns an observable that only emits a value once the source has held it for a minimum of the provided timespan, in both directions. The first value of the source is emitted immediately. A change that reverts before the timer runs out is never emitted. With `resetTimerOnConsecutiveValue: true`, a repeated pending value restarts the timer. With `distinctUntilChanged: false`, values equal to the current output are passed through, while values received during the timer are not emitted.
+
+**Example Use Case**
+
+Ignore a bouncing door contact by only reacting once the door has been open or closed for 2 seconds.
+```csharp
+// doorOpen is a IObservable<bool>
+var doorOpen = doorContact.StateChanges().Select(s => s.State == "open");
+doorOpen
+    .WhenStableFor(TimeSpan.FromSeconds(2), scheduler)
+    .SubscribeTrueFalse(
+        () => notification.Send("Door opened"),
+        () => notification.Send("Door closed"));
+```
+
 ### LimitTrueDuration
 
 Returns an observable that will automatically emit `false` if the source does not emit a `false` itself within the provided timespan after emitting `true`.
+Once the limit is reached, a repeated `true` from the source is ignored until the source emits `false` again. With `resetTimerOnConsecutiveTrue: true`, a repeated `true` instead starts a new limited period and is emitted again.
 
 ![LimitTrueDuration](img/LimitTrueDuration.png)
 
@@ -175,6 +216,44 @@ closetDoorOpen
         () => closetLight.TurnOff());
 ```
 
+### PulseTrueFor
+
+Returns an observable that emits `true` for exactly the provided timespan after the source transitions to `true`, followed by `false`. A `false` emitted by the source during the pulse is withheld until the pulse ends, and a `true` that outlasts the pulse does not extend it. A `true` that follows a `false` always starts a new pulse. With `resetTimerOnConsecutiveTrue: true`, every repeated `true` restarts the pulse (a retriggerable pulse), also after the pulse has ended. With `distinctUntilChanged: false`, `false` values received during the pulse are not emitted; the pulse always ends with a single `false`.
+
+**Example Use Case**
+
+Ring the doorbell chime for one second when the button is pressed, no matter how long it is held.
+```csharp
+// doorbellPressed is a IObservable<bool>
+var doorbellPressed = doorbell.StateChanges().Select(s => s.State == "pressed");
+doorbellPressed
+    .PulseTrueFor(TimeSpan.FromSeconds(1), scheduler)
+    .SubscribeTrueFalse(
+        () => chime.TurnOn(),
+        () => chime.TurnOff());
+```
+
+### BlinkWhileTrue
+
+Returns an observable that alternates between `true` and `false` while the source is `true`, starting with `true`. A `false` from the source stops the blinking immediately, also in the middle of a phase. The single-timespan overload uses the same duration for both phases; the `onDuration`/`offDuration` overload lets them differ. A repeated `true` from the source is ignored unless `resetTimerOnConsecutiveTrue: true`, which restarts the `true` phase. Zero or negative durations throw an `ArgumentOutOfRangeException`.
+
+**Example Use Case**
+
+Flash a light every 500 milliseconds while the alarm is triggered.
+```csharp
+// alarmTriggered is a IObservable<bool>
+var alarmTriggered = alarm.StateChanges().Select(s => s.State == "triggered");
+alarmTriggered
+    .BlinkWhileTrue(TimeSpan.FromMilliseconds(500), scheduler)
+    .SubscribeTrueFalse(
+        () => light.TurnOn(),
+        () => light.TurnOff());
+```
+
+### Inverted scheduling methods
+
+Every scheduling method except `WhenStableFor` has a `False` mirror (`FalseForAtLeast`, `PersistFalseFor`, `WhenFalseFor`, `LimitFalseDuration`, `PulseFalseFor`, `BlinkWhileFalse`) that applies the same logic to `false` values.
+
 ## Subscribing
 
 Besides transformations, this library has extension methods that help with common cases of subscribing to implementations of `IObservable<bool>`: `SubscribeTrueFalse`, `SubscribeFalse` and `SubscribeTrue`.
@@ -190,4 +269,4 @@ boolObservable.SubscribeTrueFalse(
         // Logic for when observable emits false.
     }
 )
-```
+```

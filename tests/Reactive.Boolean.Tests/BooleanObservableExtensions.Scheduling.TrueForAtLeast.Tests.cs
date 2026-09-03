@@ -189,6 +189,48 @@ namespace Reactive.Boolean.Tests
         }
 
         [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void TrueForAtLeast_RepeatedTrueAfterTimer_DoesNotRestartWithoutReset(bool distinctUntilChanged)
+        {
+            var subject = new Subject<bool>();
+            var scheduler = new TestScheduler();
+            var memoryObservable = subject.TrueForAtLeast(TimeSpan.FromTicks(2), scheduler, distinctUntilChanged);
+
+            var results = new List<bool>();
+            memoryObservable.Subscribe(results.Add);
+
+            subject.OnNext(true);
+            scheduler.AdvanceBy(2);
+            subject.OnNext(true); // The source is still "true" after the minimum passed.
+            subject.OnNext(false);
+            CollectionAssert.AreEqual(distinctUntilChanged ? new[] { true, false } : new[] { true, true, false }, results);
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void TrueForAtLeast_RepeatedTrueAfterTimer_RestartsWithReset(bool distinctUntilChanged)
+        {
+            var subject = new Subject<bool>();
+            var scheduler = new TestScheduler();
+            var memoryObservable = subject.TrueForAtLeast(TimeSpan.FromTicks(2), scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue: true);
+
+            var results = new List<bool>();
+            memoryObservable.Subscribe(results.Add);
+
+            subject.OnNext(true);
+            scheduler.AdvanceBy(2);
+            subject.OnNext(true);
+            subject.OnNext(false);
+            var expected = distinctUntilChanged ? new[] { true } : new[] { true, true };
+            CollectionAssert.AreEqual(expected, results);
+
+            scheduler.AdvanceBy(2);
+            CollectionAssert.AreEqual(expected.Append(false).ToArray(), results);
+        }
+
+        [TestMethod]
         public void TrueForAtLeast_TimerNotResetOnConsecutiveTrue_Distinct()
         {
             var subject = new Subject<bool>();
@@ -342,5 +384,187 @@ namespace Reactive.Boolean.Tests
             subject.OnError(exception);
             Assert.AreEqual(receivedException, exception);
         }
+
+        [TestMethod]
+        [DataRow(SourceShape.Subject, false, false)]
+        [DataRow(SourceShape.Subject, true, false)]
+        [DataRow(SourceShape.Subject, false, true)]
+        [DataRow(SourceShape.Subject, true, true)]
+        [DataRow(SourceShape.SelectManyBurst, false, false)]
+        [DataRow(SourceShape.SelectManyBurst, true, false)]
+        [DataRow(SourceShape.SelectManyBurst, false, true)]
+        [DataRow(SourceShape.SelectManyBurst, true, true)]
+        [DataRow(SourceShape.ColdArray, false, false)]
+        [DataRow(SourceShape.ColdArray, true, false)]
+        [DataRow(SourceShape.ColdArray, false, true)]
+        [DataRow(SourceShape.ColdArray, true, true)]
+        [DataRow(SourceShape.ColdConcat, false, false)]
+        [DataRow(SourceShape.ColdConcat, true, false)]
+        [DataRow(SourceShape.ColdConcat, false, true)]
+        [DataRow(SourceShape.ColdConcat, true, true)]
+        [DataRow(SourceShape.DeferPrepend, false, false)]
+        [DataRow(SourceShape.DeferPrepend, true, false)]
+        [DataRow(SourceShape.DeferPrepend, false, true)]
+        [DataRow(SourceShape.DeferPrepend, true, true)]
+        public void TrueForAtLeast_TrueThenFalse_SameForEverySourceShape(SourceShape shape, bool distinctUntilChanged, bool resetTimerOnConsecutiveTrue)
+        {
+            var scheduler = new TestScheduler();
+            var (source, start) = SourceShapes.Create(shape, true, false);
+            var memoryObservable = source.TrueForAtLeast(TimeSpan.FromTicks(2), scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, CompletionBehavior.CompleteAfterTimer);
+
+            var results = new List<bool>();
+            memoryObservable.Subscribe(results.Add);
+            start();
+            CollectionAssert.AreEqual(new[] { true }, results);
+
+            scheduler.AdvanceBy(1);
+            CollectionAssert.AreEqual(new[] { true }, results);
+
+            scheduler.AdvanceBy(1);
+            CollectionAssert.AreEqual(new[] { true, false }, results);
+        }
+
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(true, true)]
+        public void TrueForAtLeast_SubscribesToSourceOnce(bool distinctUntilChanged, bool resetTimerOnConsecutiveTrue)
+        {
+            var subscriptions = 0;
+            var source = Observable.Defer(() =>
+            {
+                subscriptions++;
+                return Observable.Never<bool>();
+            });
+
+            source.TrueForAtLeast(TimeSpan.FromTicks(2), new TestScheduler(), distinctUntilChanged, resetTimerOnConsecutiveTrue).Subscribe();
+
+            Assert.AreEqual(1, subscriptions);
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void TrueForAtLeast_TrueAfterFalseInsideTimer_RestartsTimer(bool distinctUntilChanged)
+        {
+            var subject = new Subject<bool>();
+            var scheduler = new TestScheduler();
+            var memoryObservable = subject.TrueForAtLeast(TimeSpan.FromTicks(3), scheduler, distinctUntilChanged);
+
+            var results = new List<bool>();
+            memoryObservable.Subscribe(results.Add);
+
+            subject.OnNext(true);
+            scheduler.AdvanceBy(1);
+            subject.OnNext(false);
+            scheduler.AdvanceBy(1);
+            subject.OnNext(true); // Not consecutive: a "true" after a "false" restarts the timer.
+            subject.OnNext(false);
+
+            scheduler.AdvanceBy(1);
+            CollectionAssert.AreEqual(distinctUntilChanged ? new[] { true } : new[] { true, true }, results);
+
+            scheduler.AdvanceBy(2);
+            CollectionAssert.AreEqual(distinctUntilChanged ? new[] { true, false } : new[] { true, true, false }, results);
+        }
+
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(true, true)]
+        public void TrueForAtLeast_CompleteImmediately_DropsWithheldFalse(bool distinctUntilChanged, bool resetTimerOnConsecutiveTrue)
+        {
+            var subject = new Subject<bool>();
+            var scheduler = new TestScheduler();
+            var memoryObservable = subject.TrueForAtLeast(TimeSpan.FromTicks(2), scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, CompletionBehavior.CompleteImmediately);
+
+            var results = new List<bool>();
+            var completed = false;
+            memoryObservable.Subscribe(results.Add, () => completed = true);
+
+            subject.OnNext(true);
+            subject.OnNext(false);
+            scheduler.AdvanceBy(1);
+            subject.OnCompleted();
+            Assert.IsTrue(completed);
+
+            scheduler.AdvanceBy(1);
+            CollectionAssert.AreEqual(new[] { true }, results);
+        }
+
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(true, true)]
+        public void TrueForAtLeast_CompleteAfterTimer_EmitsWithheldFalseThenCompletes(bool distinctUntilChanged, bool resetTimerOnConsecutiveTrue)
+        {
+            var subject = new Subject<bool>();
+            var scheduler = new TestScheduler();
+            var memoryObservable = subject.TrueForAtLeast(TimeSpan.FromTicks(2), scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, CompletionBehavior.CompleteAfterTimer);
+
+            var results = new List<bool>();
+            var completed = false;
+            memoryObservable.Subscribe(results.Add, () => completed = true);
+
+            subject.OnNext(true);
+            subject.OnNext(false);
+            scheduler.AdvanceBy(1);
+            subject.OnCompleted();
+            Assert.IsFalse(completed);
+            CollectionAssert.AreEqual(new[] { true }, results);
+
+            scheduler.AdvanceBy(1);
+            CollectionAssert.AreEqual(new[] { true, false }, results);
+            Assert.IsTrue(completed);
+        }
+
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(true, true)]
+        public void TrueForAtLeast_CompleteAfterTimer_NothingWithheld_CompletesImmediately(bool distinctUntilChanged, bool resetTimerOnConsecutiveTrue)
+        {
+            var subject = new Subject<bool>();
+            var scheduler = new TestScheduler();
+            var memoryObservable = subject.TrueForAtLeast(TimeSpan.FromTicks(2), scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, CompletionBehavior.CompleteAfterTimer);
+
+            var results = new List<bool>();
+            var completed = false;
+            memoryObservable.Subscribe(results.Add, () => completed = true);
+
+            subject.OnNext(true);
+            scheduler.AdvanceBy(1);
+            subject.OnCompleted();
+            Assert.IsTrue(completed);
+
+            scheduler.AdvanceBy(1);
+            CollectionAssert.AreEqual(new[] { true }, results);
+        }
+
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(true, true)]
+        public void TrueForAtLeast_DisposeCancelsTimer(bool distinctUntilChanged, bool resetTimerOnConsecutiveTrue)
+        {
+            var subject = new Subject<bool>();
+            var scheduler = new TestScheduler();
+            var memoryObservable = subject.TrueForAtLeast(TimeSpan.FromTicks(2), scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue);
+
+            var results = new List<bool>();
+            var subscription = memoryObservable.Subscribe(results.Add);
+
+            subject.OnNext(true);
+            subject.OnNext(false);
+            subscription.Dispose();
+
+            scheduler.AdvanceBy(2);
+            CollectionAssert.AreEqual(new[] { true }, results);
+        }
     }
-}
+}
