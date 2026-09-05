@@ -102,6 +102,8 @@ This library also has extension methods for scheduling. Every scheduling method 
 
 ### Common options
 
+Every timespan must be positive; zero or negative values throw an `ArgumentOutOfRangeException`.
+
 All scheduling methods share three optional parameters:
 
 **resetTimerOnConsecutiveTrue / resetTimerOnConsecutiveFalse (default `false`)**

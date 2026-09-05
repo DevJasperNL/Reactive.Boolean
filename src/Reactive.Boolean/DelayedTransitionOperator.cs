@@ -20,7 +20,7 @@ internal sealed class DelayedTransitionOperator(
     bool? assumedInitialValue)
     : TimedBooleanOperator(observer, timeSpan, scheduler, distinctUntilChanged, completionBehavior)
 {
-    protected override void OnSourceValue(bool value)
+    protected override void OnSourceValue(bool value, bool? previous)
     {
         if (LastEmittedValue == null)
         {

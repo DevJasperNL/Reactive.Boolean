@@ -15,6 +15,7 @@ namespace Reactive.Boolean
         /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Both consecutive "true" and "false" values will be emitted. Note that consecutive "false" values that occur during the timer, will only be emitted as a single "false" once the timer runs out.</param>
         /// <param name="resetTimerOnConsecutiveTrue">If "true", every "true" that is emitted by <paramref name="source"/> will reset the timer. A "true" that follows a "false" always (re)starts the timer. A repeated "true" received after the timer ran out only starts a new timer when this is set.</param>
         /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes while a "false" is being withheld: drop it and complete immediately (default), or emit it once the timer runs out and complete afterwards.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="timeSpan"/> is zero or negative.</exception>
         /// <returns></returns>
         public static IObservable<bool> TrueForAtLeast(
             this IObservable<bool> source,
@@ -26,10 +27,7 @@ namespace Reactive.Boolean
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(scheduler);
-            if (timeSpan <= TimeSpan.Zero)
-            {
-                return source;
-            }
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeSpan, TimeSpan.Zero);
 
             return Observable.Create<bool>(observer =>
                 new TimedWindowOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, completionBehavior,
@@ -47,6 +45,7 @@ namespace Reactive.Boolean
         /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Both consecutive "true" and "false" values will be emitted. Note that consecutive "true" values that occur during the timer, will only be emitted as a single "true" once the timer runs out.</param>
         /// <param name="resetTimerOnConsecutiveFalse">If "true", every "false" that is emitted by <paramref name="source"/> will reset the timer. A "false" that follows a "true" always (re)starts the timer. A repeated "false" received after the timer ran out only starts a new timer when this is set.</param>
         /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes while a "true" is being withheld: drop it and complete immediately (default), or emit it once the timer runs out and complete afterwards.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="timeSpan"/> is zero or negative.</exception>
         /// <returns></returns>
         public static IObservable<bool> FalseForAtLeast(
             this IObservable<bool> source,
@@ -70,6 +69,7 @@ namespace Reactive.Boolean
         /// <param name="resetTimerOnConsecutiveFalse">If "true", every "false" that is emitted by <paramref name="source"/> while the timer runs will reset the timer.</param>
         /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Both consecutive "true" and "false" values will be emitted. Note that consecutive "false" values that occur during the timer, will only be emitted as a single "false" once the timer runs out.</param>
         /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes while a "false" is being delayed: drop it and complete immediately (default), or emit it once the timer runs out and complete afterwards.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="timeSpan"/> is zero or negative.</exception>
         /// <returns></returns>
         public static IObservable<bool> PersistTrueFor(
             this IObservable<bool> source,
@@ -81,10 +81,7 @@ namespace Reactive.Boolean
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(scheduler);
-            if (timeSpan <= TimeSpan.Zero)
-            {
-                return source;
-            }
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeSpan, TimeSpan.Zero);
 
             return Observable.Create<bool>(observer =>
                 new DelayedTransitionOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveFalse, completionBehavior,
@@ -102,6 +99,7 @@ namespace Reactive.Boolean
         /// <param name="resetTimerOnConsecutiveTrue">If "true", every "true" that is emitted by <paramref name="source"/> while the timer runs will reset the timer.</param>
         /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Both consecutive "true" and "false" values will be emitted. Note that consecutive "true" values that occur during the timer, will only be emitted as a single "true" once the timer runs out.</param>
         /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes while a "true" is being delayed: drop it and complete immediately (default), or emit it once the timer runs out and complete afterwards.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="timeSpan"/> is zero or negative.</exception>
         /// <returns></returns>
         public static IObservable<bool> PersistFalseFor(
             this IObservable<bool> source,
@@ -125,6 +123,7 @@ namespace Reactive.Boolean
         /// <param name="resetTimerOnConsecutiveTrue">If "true", every "true" that is emitted by <paramref name="source"/> while the timer runs will reset the timer.</param>
         /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Consecutive "false" values are emitted, as are consecutive "true" values received after the timer ran out. "true" values received while the timer runs are not emitted.</param>
         /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes while the timer runs: complete immediately without emitting "true" (default), or emit "true" once the timer runs out and complete afterwards.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="timeSpan"/> is zero or negative.</exception>
         public static IObservable<bool> WhenTrueFor(
             this IObservable<bool> source,
             TimeSpan timeSpan,
@@ -135,10 +134,7 @@ namespace Reactive.Boolean
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(scheduler);
-            if (timeSpan <= TimeSpan.Zero)
-            {
-                return source;
-            }
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeSpan, TimeSpan.Zero);
 
             return Observable.Create<bool>(observer =>
                 new DelayedTransitionOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, completionBehavior,
@@ -156,6 +152,7 @@ namespace Reactive.Boolean
         /// <param name="resetTimerOnConsecutiveFalse">If "true", every "false" that is emitted by <paramref name="source"/> while the timer runs will reset the timer.</param>
         /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Consecutive "true" values are emitted, as are consecutive "false" values received after the timer ran out. "false" values received while the timer runs are not emitted.</param>
         /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes while the timer runs: complete immediately without emitting "false" (default), or emit "false" once the timer runs out and complete afterwards.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="timeSpan"/> is zero or negative.</exception>
         public static IObservable<bool> WhenFalseFor(
             this IObservable<bool> source,
             TimeSpan timeSpan,
@@ -178,6 +175,7 @@ namespace Reactive.Boolean
         /// <param name="resetTimerOnConsecutiveValue">If "true", a repeated pending value that is emitted by <paramref name="source"/> while the timer runs will reset the timer.</param>
         /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Values equal to the last emitted value are passed through, including one that cancels a pending change. Values received while the timer runs are not emitted.</param>
         /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes while a change is pending: complete immediately without emitting it (default), or emit it once the timer runs out and complete afterwards.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="timeSpan"/> is zero or negative.</exception>
         /// <returns></returns>
         public static IObservable<bool> WhenStableFor(
             this IObservable<bool> source,
@@ -189,10 +187,7 @@ namespace Reactive.Boolean
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(scheduler);
-            if (timeSpan <= TimeSpan.Zero)
-            {
-                return source;
-            }
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeSpan, TimeSpan.Zero);
 
             return Observable.Create<bool>(observer =>
                 new DelayedTransitionOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveValue, completionBehavior,
@@ -210,6 +205,7 @@ namespace Reactive.Boolean
         /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Both consecutive "true" and "false" values will be emitted.</param>
         /// <param name="resetTimerOnConsecutiveTrue">If "true", every "true" that is emitted by <paramref name="source"/> will reset the timer. A "true" received after the limit was reached then re-arms the limit and is emitted again.</param>
         /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes while the timer runs: complete immediately without emitting the limiting "false" (default), or emit it once the timer runs out and complete afterwards.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="timeSpan"/> is zero or negative.</exception>
         /// <returns></returns>
         public static IObservable<bool> LimitTrueDuration(
             this IObservable<bool> source,
@@ -221,6 +217,7 @@ namespace Reactive.Boolean
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(scheduler);
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeSpan, TimeSpan.Zero);
 
             return Observable.Create<bool>(observer =>
                 new TimedWindowOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, completionBehavior,
@@ -238,6 +235,7 @@ namespace Reactive.Boolean
         /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Both consecutive "true" and "false" values will be emitted.</param>
         /// <param name="resetTimerOnConsecutiveFalse">If "true", every "false" that is emitted by <paramref name="source"/> will reset the timer. A "false" received after the limit was reached then re-arms the limit and is emitted again.</param>
         /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes while the timer runs: complete immediately without emitting the limiting "true" (default), or emit it once the timer runs out and complete afterwards.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="timeSpan"/> is zero or negative.</exception>
         /// <returns></returns>
         public static IObservable<bool> LimitFalseDuration(
             this IObservable<bool> source,
@@ -261,6 +259,7 @@ namespace Reactive.Boolean
         /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Both consecutive "true" and "false" values will be emitted. Note that "false" values that occur during the pulse are not emitted; the pulse always ends with a single "false".</param>
         /// <param name="resetTimerOnConsecutiveTrue">If "true", every "true" that is emitted by <paramref name="source"/> will restart the pulse, also after the pulse has ended. A "true" that follows a "false" always (re)starts the pulse.</param>
         /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes during a pulse: complete immediately without emitting the closing "false" (default), or emit it once the pulse ends and complete afterwards.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="timeSpan"/> is zero or negative.</exception>
         /// <returns></returns>
         public static IObservable<bool> PulseTrueFor(
             this IObservable<bool> source,
@@ -272,10 +271,7 @@ namespace Reactive.Boolean
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(scheduler);
-            if (timeSpan <= TimeSpan.Zero)
-            {
-                return source;
-            }
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeSpan, TimeSpan.Zero);
 
             return Observable.Create<bool>(observer =>
                 new TimedWindowOperator(observer, timeSpan, scheduler, distinctUntilChanged, resetTimerOnConsecutiveTrue, completionBehavior,
@@ -293,6 +289,7 @@ namespace Reactive.Boolean
         /// <param name="distinctUntilChanged">If set to "false", the resulting observable will not be distinct. Both consecutive "true" and "false" values will be emitted. Note that "true" values that occur during the pulse are not emitted; the pulse always ends with a single "true".</param>
         /// <param name="resetTimerOnConsecutiveFalse">If "true", every "false" that is emitted by <paramref name="source"/> will restart the pulse, also after the pulse has ended. A "false" that follows a "true" always (re)starts the pulse.</param>
         /// <param name="completionBehavior">Determines what happens when <paramref name="source"/> completes during a pulse: complete immediately without emitting the closing "true" (default), or emit it once the pulse ends and complete afterwards.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="timeSpan"/> is zero or negative.</exception>
         /// <returns></returns>
         public static IObservable<bool> PulseFalseFor(
             this IObservable<bool> source,

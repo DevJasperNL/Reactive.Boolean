@@ -521,5 +521,15 @@ namespace Reactive.Boolean.Tests
             scheduler.AdvanceBy(2);
             CollectionAssert.AreEqual(new[] { true }, results);
         }
+        [TestMethod]
+        public void LimitTrueDuration_ZeroOrNegativeTimeSpan_Throws()
+        {
+            var subject = new Subject<bool>();
+            var scheduler = new TestScheduler();
+
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => subject.LimitTrueDuration(TimeSpan.Zero, scheduler));
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => subject.LimitTrueDuration(TimeSpan.FromTicks(-1), scheduler));
+        }
+
     }
 }

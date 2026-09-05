@@ -479,11 +479,13 @@ namespace Reactive.Boolean.Tests
         }
 
         [TestMethod]
-        public void PulseTrueFor_ZeroTimeSpan_ReturnsSource()
+        public void PulseTrueFor_ZeroOrNegativeTimeSpan_Throws()
         {
             var subject = new Subject<bool>();
+            var scheduler = new TestScheduler();
 
-            Assert.AreSame(subject, subject.PulseTrueFor(TimeSpan.Zero, new TestScheduler()));
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => subject.PulseTrueFor(TimeSpan.Zero, scheduler));
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => subject.PulseTrueFor(TimeSpan.FromTicks(-1), scheduler));
         }
 
         [TestMethod]

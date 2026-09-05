@@ -55,17 +55,28 @@ namespace Reactive.Boolean
         {
             ArgumentNullException.ThrowIfNull(source);
 
+            var observables = source.ToArray();
+            if (observables.Any(o => o is null))
+            {
+                throw new ArgumentException("The collection contains a null observable.", nameof(source));
+            }
+            if (observables.Length == 0)
+            {
+                // CombineLatest over no sources never emits; the disjunction of nothing is vacuously false.
+                return Observable.Return(false);
+            }
+
             if (operatorDistinctness == OperatorDistinctness.InputDistinctUntilChanged)
             {
-                source = source.Select(o => o.DistinctUntilChanged());
+                observables = observables.Select(o => o.DistinctUntilChanged()).ToArray();
             }
             if (operatorDistinctness == OperatorDistinctness.OutputDistinctUntilChanged)
             {
-                return source
+                return observables
                     .CombineLatest(values => values.Any(v => v))
                     .DistinctUntilChanged();
             }
-            return source.CombineLatest(values => values.Any(v => v));
+            return observables.CombineLatest(values => values.Any(v => v));
         }
 
         /// <summary>
@@ -82,8 +93,13 @@ namespace Reactive.Boolean
         public static IObservable<bool> Or(
             this IObservable<bool> observable,
             IEnumerable<IObservable<bool>> observables,
-            OperatorDistinctness operatorDistinctness = OperatorDistinctness.OutputDistinctUntilChanged) =>
-            new[] { observable }.Concat(observables).Or(operatorDistinctness);
+            OperatorDistinctness operatorDistinctness = OperatorDistinctness.OutputDistinctUntilChanged)
+        {
+            ArgumentNullException.ThrowIfNull(observable);
+            ArgumentNullException.ThrowIfNull(observables);
+
+            return new[] { observable }.Concat(observables).Or(operatorDistinctness);
+        }
 
         /// <summary>
         /// Returns an observable that combines the latest results of two observables using an OR operator.
@@ -93,7 +109,7 @@ namespace Reactive.Boolean
         public static IObservable<bool> Or(
             this IObservable<bool> observable,
             params IObservable<bool>[] observables) =>
-            new[] { observable }.Concat(observables).Or();
+            observable.Or(observables, OperatorDistinctness.OutputDistinctUntilChanged);
 
         /// <summary>
         /// Returns an observable that combines the latest results of two observables using an OR operator.
@@ -210,7 +226,7 @@ namespace Reactive.Boolean
             IObservable<bool> observable2,
             IObservable<bool> observable3,
             OperatorDistinctness operatorDistinctness) =>
-            new[] { observable1, observable2, observable3 }.Or(operatorDistinctness);
+            observable1.Or(observable2, observable3, operatorDistinctness).Not();
 
         /// <summary>
         /// Returns an observable that combines the latest results of two observables using an NOR operator.
@@ -231,6 +247,6 @@ namespace Reactive.Boolean
             IObservable<bool> observable3,
             IObservable<bool> observable4,
             OperatorDistinctness operatorDistinctness) =>
-            new[] { observable1, observable2, observable3, observable4 }.Or(operatorDistinctness);
+            observable1.Or(observable2, observable3, observable4, operatorDistinctness).Not();
     }
 }

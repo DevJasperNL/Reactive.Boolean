@@ -1,4 +1,5 @@
 using Microsoft.Reactive.Testing;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -472,6 +473,29 @@ namespace Reactive.Boolean.Tests
 
             scheduler.AdvanceBy(2);
             CollectionAssert.AreEqual(new[] { false }, results);
+        }
+
+        [TestMethod]
+        public void WhenTrueFor_ZeroOrNegativeTimeSpan_Throws()
+        {
+            var subject = new Subject<bool>();
+            var scheduler = new TestScheduler();
+
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => subject.WhenTrueFor(TimeSpan.Zero, scheduler));
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => subject.WhenTrueFor(TimeSpan.FromTicks(-1), scheduler));
+        }
+
+        [TestMethod]
+        public void WhenTrueFor_ImmediateScheduler_TimerFiresInline()
+        {
+            var subject = new Subject<bool>();
+            var memoryObservable = subject.WhenTrueFor(TimeSpan.FromTicks(1), Scheduler.Immediate);
+
+            var results = new List<bool>();
+            memoryObservable.Subscribe(results.Add);
+
+            subject.OnNext(true);
+            CollectionAssert.AreEqual(new[] { false, true }, results);
         }
     }
 }

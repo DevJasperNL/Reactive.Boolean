@@ -260,5 +260,85 @@ namespace Reactive.Boolean.Tests
             subject2.OnNext(true);
             CollectionAssert.AreEqual(new[] { true, true, true, false, false, true, true }, results);
         }
+        [TestMethod]
+        [DataRow(false, false, true)]
+        [DataRow(false, true, false)]
+        [DataRow(true, false, false)]
+        [DataRow(true, true, false)]
+        public void Nor(bool input1, bool input2, bool expectedOutput)
+        {
+            var subject1 = new Subject<bool>();
+            var subject2 = new Subject<bool>();
+            var nor = subject1.Nor(subject2);
+
+            bool? result = null;
+            nor.Subscribe(b => result = b);
+
+            subject1.OnNext(input1);
+            subject2.OnNext(input2);
+
+            Assert.AreEqual(expectedOutput, result);
+        }
+
+        [TestMethod]
+        public void Nor_EveryOverload_IsInverseOfOr()
+        {
+            for (var bits = 0; bits < 16; bits++)
+            {
+                var inputs = Enumerable.Range(0, 4).Select(i => (bits & (1 << i)) != 0).ToArray();
+                var subjects = inputs.Select(_ => new Subject<bool>()).ToArray();
+                var expectedThree = !(inputs[0] || inputs[1] || inputs[2]);
+                var expectedFour = !inputs.Any(v => v);
+
+                var overloads = new (string Name, IObservable<bool> Nor, bool Expected)[]
+                {
+                    ("3-arity", subjects[0].Nor(subjects[1], subjects[2], OperatorDistinctness.NotDistinct), expectedThree),
+                    ("4-arity", subjects[0].Nor(subjects[1], subjects[2], subjects[3], OperatorDistinctness.NotDistinct), expectedFour),
+                    ("params", subjects[0].Nor(subjects[1], subjects[2], subjects[3]), expectedFour),
+                    ("enumerable", subjects[0].Nor(subjects.Skip(1), OperatorDistinctness.NotDistinct), expectedFour),
+                    ("collection", subjects.Nor(), expectedFour),
+                };
+                var results = new bool?[overloads.Length];
+                for (var i = 0; i < overloads.Length; i++)
+                {
+                    var index = i;
+                    overloads[i].Nor.Subscribe(b => results[index] = b);
+                }
+
+                for (var i = 0; i < subjects.Length; i++)
+                {
+                    subjects[i].OnNext(inputs[i]);
+                }
+
+                for (var i = 0; i < overloads.Length; i++)
+                {
+                    Assert.AreEqual(overloads[i].Expected, results[i], $"{overloads[i].Name} with inputs {string.Join(",", inputs)}");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void Or_EmptyCollection_EmitsFalseAndCompletes()
+        {
+            var results = new List<bool>();
+            var completed = false;
+
+            Array.Empty<IObservable<bool>>().Or().Subscribe(results.Add, () => completed = true);
+
+            CollectionAssert.AreEqual(new[] { false }, results);
+            Assert.IsTrue(completed);
+        }
+
+        [TestMethod]
+        public void Or_NullObservable_Throws()
+        {
+            var subject = new Subject<bool>();
+
+            Assert.ThrowsExactly<ArgumentNullException>(() => ((IObservable<bool>)null!).Or(subject, subject));
+            Assert.ThrowsExactly<ArgumentNullException>(() => subject.Or((IEnumerable<IObservable<bool>>)null!));
+            Assert.ThrowsExactly<ArgumentException>(() => subject.Or(new IObservable<bool>[] { null! }));
+            Assert.ThrowsExactly<ArgumentException>(() => subject.Or(subject, null!, subject, OperatorDistinctness.NotDistinct));
+        }
+
     }
 }

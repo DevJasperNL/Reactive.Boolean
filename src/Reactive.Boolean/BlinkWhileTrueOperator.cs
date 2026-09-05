@@ -17,7 +17,7 @@ internal sealed class BlinkWhileTrueOperator(
     // Under CompleteAfterTimer only the current "true" phase is finished, so an "off" phase has nothing pending.
     protected override bool HasPendingValue => TimerRunning && LastEmittedValue == true;
 
-    protected override void OnSourceValue(bool value)
+    protected override void OnSourceValue(bool value, bool? previous)
     {
         if (!value)
         {
@@ -26,7 +26,7 @@ internal sealed class BlinkWhileTrueOperator(
             return;
         }
 
-        if (LastSourceValue != true || resetTimerOnConsecutiveTrue)
+        if (previous != true || resetTimerOnConsecutiveTrue)
         {
             Emit(true);
             StartTimer();

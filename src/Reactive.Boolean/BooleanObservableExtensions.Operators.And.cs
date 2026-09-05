@@ -59,17 +59,28 @@ namespace Reactive.Boolean
         {
             ArgumentNullException.ThrowIfNull(source);
 
+            var observables = source.ToArray();
+            if (observables.Any(o => o is null))
+            {
+                throw new ArgumentException("The collection contains a null observable.", nameof(source));
+            }
+            if (observables.Length == 0)
+            {
+                // CombineLatest over no sources never emits; the conjunction of nothing is vacuously true.
+                return Observable.Return(true);
+            }
+
             if (operatorDistinctness == OperatorDistinctness.InputDistinctUntilChanged)
             {
-                source = source.Select(o => o.DistinctUntilChanged());
+                observables = observables.Select(o => o.DistinctUntilChanged()).ToArray();
             }
             if (operatorDistinctness == OperatorDistinctness.OutputDistinctUntilChanged)
             {
-                return source
+                return observables
                     .CombineLatest(values => values.All(v => v))
                     .DistinctUntilChanged();
             }
-            return source.CombineLatest(values => values.All(v => v));
+            return observables.CombineLatest(values => values.All(v => v));
         }
 
         /// <summary>
@@ -86,8 +97,13 @@ namespace Reactive.Boolean
         public static IObservable<bool> And(
             this IObservable<bool> observable,
             IEnumerable<IObservable<bool>> observables,
-            OperatorDistinctness operatorDistinctness = OperatorDistinctness.OutputDistinctUntilChanged) =>
-            new[] { observable }.Concat(observables).And(operatorDistinctness);
+            OperatorDistinctness operatorDistinctness = OperatorDistinctness.OutputDistinctUntilChanged)
+        {
+            ArgumentNullException.ThrowIfNull(observable);
+            ArgumentNullException.ThrowIfNull(observables);
+
+            return new[] { observable }.Concat(observables).And(operatorDistinctness);
+        }
 
         /// <summary>
         /// Returns an observable that combines the latest results of all observables using an AND operator.
@@ -97,7 +113,7 @@ namespace Reactive.Boolean
         public static IObservable<bool> And(
             this IObservable<bool> observable,
             params IObservable<bool>[] observables) =>
-            new[] { observable }.Concat(observables).And();
+            observable.And(observables, OperatorDistinctness.OutputDistinctUntilChanged);
 
         /// <summary>
         /// Returns an observable that combines the latest results of all observables using an AND operator.
@@ -296,7 +312,7 @@ namespace Reactive.Boolean
         public static IObservable<bool> AndOp(
             this IObservable<bool> observable,
             params IObservable<bool>[] observables) =>
-            new[] { observable }.Concat(observables).And();
+            observable.And(observables);
 
         /// <summary>
         /// Returns an observable that combines the latest results of all observables using an AND operator.
