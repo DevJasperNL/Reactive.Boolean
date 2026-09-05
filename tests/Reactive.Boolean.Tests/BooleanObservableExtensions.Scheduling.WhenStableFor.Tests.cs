@@ -449,11 +449,37 @@ namespace Reactive.Boolean.Tests
         }
 
         [TestMethod]
-        public void WhenStableFor_ZeroTimeSpan_ReturnsSource()
+        public void WhenStableFor_ZeroOrNegativeTimeSpan_Throws()
         {
             var subject = new Subject<bool>();
+            var scheduler = new TestScheduler();
 
-            Assert.AreSame(subject, subject.WhenStableFor(TimeSpan.Zero, new TestScheduler()));
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => subject.WhenStableFor(TimeSpan.Zero, scheduler));
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => subject.WhenStableFor(TimeSpan.FromTicks(-1), scheduler));
+        }
+
+        [TestMethod]
+        public void WhenStableFor_ValueFedBackFromObserver_IsNotLost()
+        {
+            var subject = new Subject<bool>();
+            var scheduler = new TestScheduler();
+            var stableObservable = subject.WhenStableFor(TimeSpan.FromTicks(2), scheduler);
+
+            var results = new List<bool>();
+            stableObservable.Subscribe(b =>
+            {
+                results.Add(b);
+                if (b)
+                {
+                    subject.OnNext(false);
+                }
+            });
+
+            subject.OnNext(true);
+            CollectionAssert.AreEqual(new[] { true }, results);
+
+            scheduler.AdvanceBy(2);
+            CollectionAssert.AreEqual(new[] { true, false }, results);
         }
     }
 }

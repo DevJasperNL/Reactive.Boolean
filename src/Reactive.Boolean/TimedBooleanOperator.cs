@@ -24,8 +24,8 @@ internal abstract class TimedBooleanOperator(
     private bool _terminated;
 
     /// <summary>
-    /// Inside <see cref="OnSourceValue"/>: the value that preceded the one being handled.
-    /// Inside <see cref="OnTimerElapsed"/>: the latest value. Null until the source has emitted.
+    /// The latest value received from the source, including the one being handled inside <see cref="OnSourceValue"/>.
+    /// Null until the source has emitted.
     /// </summary>
     protected bool? LastSourceValue { get; private set; }
 
@@ -47,7 +47,9 @@ internal abstract class TimedBooleanOperator(
     /// </summary>
     protected virtual bool HasPendingValue => TimerRunning;
 
-    protected abstract void OnSourceValue(bool value);
+    /// <param name="value">The value just received from the source.</param>
+    /// <param name="previous">The value that preceded it, or null when this is the first one.</param>
+    protected abstract void OnSourceValue(bool value, bool? previous);
 
     protected abstract void OnTimerElapsed();
 
@@ -61,7 +63,8 @@ internal abstract class TimedBooleanOperator(
                 _terminated = true;
             }
         });
-        return new CompositeDisposable(subscription, _timer, stop);
+        // Terminate first so a timer callback that is already dequeued cannot emit while the rest is torn down.
+        return new CompositeDisposable(stop, subscription, _timer);
     }
 
     protected void Emit(bool value)
@@ -100,8 +103,11 @@ internal abstract class TimedBooleanOperator(
                 return;
             }
 
-            OnSourceValue(value);
+            // Recorded before dispatching so a timer that fires synchronously (e.g. Scheduler.Immediate) or a source
+            // that is fed re-entrantly from the observer never reads or overwrites a stale value.
+            var previous = LastSourceValue;
             LastSourceValue = value;
+            OnSourceValue(value, previous);
         }
     }
 

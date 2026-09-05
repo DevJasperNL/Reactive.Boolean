@@ -566,5 +566,15 @@ namespace Reactive.Boolean.Tests
             scheduler.AdvanceBy(2);
             CollectionAssert.AreEqual(new[] { true }, results);
         }
+        [TestMethod]
+        public void TrueForAtLeast_ZeroOrNegativeTimeSpan_Throws()
+        {
+            var subject = new Subject<bool>();
+            var scheduler = new TestScheduler();
+
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => subject.TrueForAtLeast(TimeSpan.Zero, scheduler));
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => subject.TrueForAtLeast(TimeSpan.FromTicks(-1), scheduler));
+        }
+
     }
 }

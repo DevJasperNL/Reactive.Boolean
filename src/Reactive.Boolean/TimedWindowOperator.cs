@@ -21,7 +21,7 @@ internal sealed class TimedWindowOperator(
 {
     protected override bool HasPendingValue => TimerRunning && (forceFalseAtEnd || LastSourceValue == false);
 
-    protected override void OnSourceValue(bool value)
+    protected override void OnSourceValue(bool value, bool? previous)
     {
         if (!value)
         {
@@ -36,7 +36,7 @@ internal sealed class TimedWindowOperator(
         }
 
         // A rising edge always opens a window; a repeated "true" only restarts it when asked to.
-        if (LastSourceValue != true)
+        if (previous != true)
         {
             Emit(true);
             StartTimer();

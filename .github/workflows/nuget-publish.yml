@@ -15,15 +15,15 @@ jobs:
     steps:
       - name: 🗂️ Checkout the repository
         uses: actions/checkout@main
-        with:
-          fetch-depth: 0
 
-      - name: 🔖 Get version from latest tag
+      - name: 🔖 Get version from release tag
         id: version
         run: |
-          latest=$(git describe --tags $(git rev-list --tags --max-count=1))
-          echo Current version:    $latest
-          echo "version=$latest" >> $GITHUB_OUTPUT
+          # The release that triggered this run, not the newest tag in the repository.
+          tag="${{ github.event.release.tag_name }}"
+          version="${tag#v}"
+          echo Current version:    $version
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: ⬇️ Install .NET 10
         uses: actions/setup-dotnet@v5
